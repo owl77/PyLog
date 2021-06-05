@@ -1,0 +1,92 @@
+PYLOG CHEATSHEET
+
+
+Logical Rules
+=============
+
+AndElimL(formulanumber)
+
+AndElimR(formulanumber)
+
+AndInt(formulanumber, formulanumber)
+
+ForallElim(formulanumber, newvariable)
+
+ForallInt(formulanumber, variable, newboundvariable)
+
+EqualitySub(formulanumber, formulanumber, termplaceslist)
+
+FreeSub(variablename, variablename) - shortcut for ForallInt and ForallElim where newboundvariabe is generated automatically
+
+EquivExp(formulanumber)
+
+
+Class Rules
+===========
+
+ClassElim(formulanumber)
+
+
+EnvironmentCommands
+
+===================
+
+NewDef(predicatename, argumentvariablenamelist, definitionequationstring)
+
+DefEqInt(definitionequationnumber)
+
+AddFunction(name, aritynumber, prefixboolean)
+
+NewDefEquation(definitionstring)
+
+NewAx(formulastring)
+
+NewTheorem(formulastring)
+
+ShowDefinitions()
+
+ShowDefEquations()
+
+ShowAxioms()
+
+ShowTheorems()
+
+Load(environmentortheoremname)
+
+Save(environmentortheoremname)
+
+AddConstants(constantnamelist)
+
+Undo()
+
+ShowProof()
+
+
+
+Input and default "pretty" display
+===================================
+
+union(x,y)               (x ∪ y)
+intersection(x,y)        (x ∩ y)
+extension x. A           {x: A}
+forall x. A              ∀x. A
+exists x. A              ∃x. A
+Elem(x,y)               (x ε y)
+app(f,x)                 (f'x)
+pair(x,y)                {x,y}
+singleton(x)             {x}
+orderedpair(x,y)         (x,y)
+prod(x,y)                (x X y)
+
+
+
+Useful system structures
+========================
+
+    
+
+
+
+
+
+

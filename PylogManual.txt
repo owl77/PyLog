@@ -1,0 +1,579 @@
+
+
+
+
+AN INTRODUCTION TO PYLOG
+========================
+
+Clarence Lewis Protin 
+
+21st of December 2020
+
+ABOUT PYLOG
+
+The goal of PyLog is to build a framework for formalising mathematics and for automatically checking mathematical proofs.
+It is inspired by the talks of Voevodsky and projects such as Mizar and Coq. It has the following key aspects:
+
+1. It is based on first-order logic (rather than HOL) augmented with a class-forming operator in the style of Kelley-Morse set theory.
+2. It is based on a linearised form of natural deduction. Classical deduction is seen as an extension of intuitionistic deduction
+so that the classical negation rule can be used or not depending on one's goals. The goal is to come close to the process of actual mathematical thought.
+3. It includes weak second-order extensions (polymorphism) to cope with deriving and re-using propositional and first-order validities.
+4. It is written in Python and runs from the Python CLI. The interface aims at being natural and intuitive for logicians and mathematicians and
+also convenient for programmers, as the data structures can also be accessed directly.
+5. It has a series of novel features in the way constants, variables, functions and predicates are treated and defined.
+
+The first step in our project is to complete the formalisation of Kelley-Morse set theory such as found in the appendix on Kelley's book General Topology.
+We then propose to move on the formalising basic concepts in algebra and category theory.
+
+
+ON THE DEFAULT PROOF INSTANCE
+
+When Pylog is started the default Proof instance named "Proof" is created. The various method commands
+refer to this instance by default but can also be entered as Proof.<Command>. One can also create as many separate Proof
+instances as desired.
+
+
+DEFINING NEW FUNCTIONS:
+
+First we must register the new function symbol by providing the name, arity and setting the boolean value of the prefix field.
+
+Let us start Pylog and load the Kelley-Morse system (state in 21 Dec 2020):
+
+$ python3.7 -i proofenvironment.py
+
+Welcome to PyLog 1.0
+
+Natural Deduction Proof Assistant and Proof Checker
+
+(c) 2020  C. Lewis Protin
+
+>>> Load("Kelley-Morse")
+True
+>>> 
+The Function predicate is already defined. Let is say we want to define the domain and range functions for a set which is a Function.
+Then we use the Proof.AddFunction method:
+
+>>> Proof.AddFunction("domain",1,True)
+True
+>>> 
+
+We can check that the new symbol has been registered by checking the parser.functions dictionary.
+
+Now we can enter the actual definition with the the Proof.NewDefEq method:
+
+>>> Proof.NewDefEq("domain(f) = extension x. exists y. Elem(orderedpair(x,y),f)")
+True
+>>>
+
+Note that in NewDefEq we do not use parenthesis for the defining equality unlike in all other cases where - for input -
+we must use (t = t') and never just t = t'.
+We can now check if our new definition has been added correctly:
+
+>>> Proof.ShowDefEquations()
+0. (x ∪ y) = {z: ((z ε x) v (z ε y))} 
+1. (x ∩ y) = {z: ((z ε x) & (z ε y))} 
+2. ~x = {y: ¬(y ε x)} 
+3. (x ~ y) = (x ∩ ~y) 
+4. 0 = {x: ¬(x = x)} 
+5. u = {x: (x = x)} 
+6. ∪x = {z: exists y.((y ε x) & (z ε y))} 
+7. ∩x = {z: forall y.((y ε x) -> (z ε y))} 
+8. Px = {y: (y ⊂ x)} 
+9. {x} = {z: ((x ε u) -> (z = x))} 
+10. {x,y} = ({x} ∪ {y}) 
+11. (x,y) = {x,{x,y}} 
+12. proj1(x) = ∩∩x 
+13. proj2(x) = (∩∪x ∪ (∪∪x ~ ∪∩x)) 
+14. (a∘b) = {w: exists x.exists y.exists z.((((x,y) ε a) & ((y,z) ε b)) & (w = (x,z)))} 
+15. (r)⁻¹ = {z: exists x.exists y.(((x,y) ε r) & (z = (y,x)))} 
+16. domain(f) = {x: exists y.((x,y) ε f)} 
+
+We now can save:
+
+>>> Proof.Save("Kelley-Morse")
+True
+
+Likewise we can add the range function 
+
+17. range(f) = {y: exists x.((x,y) ε f)}.
+
+A central importance is the image of an element by a function f (which we must not confuse with the function expressions of our first-order language).
+Notice how there are two languages in Pylog. One for input, which is terse and formal, and one more aesthetic one for display which involves the use
+of unicode characters. We can directly specify (to a limit extent) the "pretty" printing of a function by means of the parser.pretty dictionary.
+For function applications we will use the notation (f'x). We could do without the outer parenthesis but they are there to remind us that application
+is itself a function. 
+
+We use thus:
+
+>>> Proof.AddFunction("app",2,False)
+>>> Proof.NewDefEq("app(f,x) = bigintersection(extension y. Elem(orderedpair(x,y),f))")
+>>> parser.pretty["app"] ="'"
+
+We get then:
+
+18. (f'x) = ∩{y: ((x,y) ε f)}
+
+We can define the cartesian product (x X y) of two sets. We use the function prod(x,y) and the infix pretty printing "(x X y)".
+
+>>> Proof.AddFunction("prod",2,False)
+True
+>>> Proof.NewDefEq("prod(x,y) = extension z. exists a. exists b. ((z = orderedpair(a,b)) & (Elem(a,x) & Elem(b,y)))")
+True
+>>> parser.pretty["prod"] =" X "
+
+19. (x X y) = {z: exists a.exists b.((z = (a,b)) & ((a ε x) & (b ε y)))} 
+
+Finally let us define the "exponential object", the set func(x,y) of all functions from x to y.
+
+>>> Proof.AddFunction("func",2,True)
+True
+>>> Proof.NewDefEq("func(x,y) = extension f. (Function(f) & ( ( domain(f) = x)    &  (range(f) = y ) )) ")
+True
+
+20. func(x,y) = {f: (Function(f) & ((domain(f) = x) & (range(f) = y)))} 
+
+
+ADDING NEW AXIOMS:
+
+Let us add the Axiom of Substitution (Kelley Gen. Top. p261) and Axiom of amalgamation.
+Notice that you can list the fields and methods of Proof by using the command dir(Proof).
+
+>>> Proof.NewAx("((Function(f)& Set(domain(f))) -> Set(range(f)))")
+True
+>>> Proof.ShowAxioms()
+0. forall x.forall y.((x = y) -> forall z.((z ε x) <-> (z ε y))) 
+1. Set(x) -> exists y.(Set(y) & forall z.((z ⊂ x) -> (z ε y))) 
+2. (Set(x) & Set(y)) -> Set((x ∪ y)) 
+3. (Function(f) & Set(domain(f))) -> Set(range(f)) 
+
+And likewise we enter 
+>>> Proof.NewAx("(Set(x) -> Set(bigunion(x)))")
+to obtain
+
+4. Set(x) -> Set(∪x)
+
+ADDING PREDICATES
+
+To add predicate definitions we proceed analogously as in the case for functions.
+Let us say we want to define the predicate  Trans for transitivity (of a relation).
+We first must register the new symbol furnishing name, arity and setting the prefix Boolean:
+
+>>> Proof.AddPredicate("Trans",1, True)
+True
+
+Then we introduce the definition with the method Proof.NewDef furnishing the name of the predicate to be defined,
+the list of argument variables and the defining formula.
+
+>>> Proof.NewDef("Trans",["r"],"forall x. forall y. forall z. ((Elem(orderedpair(x,y),r) & Elem(orderedpair(y,z),r))  -> Elem(orderedpair(x,z),r) )")
+True
+
+>>> Proof.ShowDefinitions()
+Set(x) <-> exists y.(x ε y)
+(x ⊂ y) <-> forall z.((z ε x) -> (z ε y))
+Relation(r) <-> forall z.((z ε r) -> exists x.exists y.(z = (x,y)))
+Function(f) <-> (Relation(f) & forall x.forall y.forall z.((((x,y) ε f) & ((x,z) ε f)) -> (y = z)))
+Trans(r) <-> forall x.forall y.forall z.((((x,y) ε r) & ((y,z) ε r)) -> ((x,z) ε r))
+
+Note that predicate definitions are indexed by name and not by number as in the case of functions and constants. This
+will be important when we discuss the logical rules.
+NOTE: now we do not need to use AddPredicate, as this command is incorporated in NewDef.
+
+VARIABLES AND CONSTANTS
+
+In PyLog a "variable" includes both ordinary variables and constants. Constants are singled out in parser.constants and
+are characterised by not being able to be quantified over. This simplifies  parsing and the implementation of the rather complex syntactic
+operations in astop.py.
+Thus if we want to define a constant we proceed as in the case of functions but we must first register the new constant symbol using
+Proof.AddConstants which takes a list of new constant symbols. We can also introduce in the same way new variable symbols
+by means of Proof.AddVariables.  Check variables (in the PyLog sense) with parser.variables.
+
+NEGATION
+
+PyLog is based on the intuitionistic predicate logic with an extensional operator (and some weak conservative second-order extensions).
+To introduce negation we can use either  use the standard notation (P(x) -> _|_) or the shortcut neg P(x). The operator
+neg does not take parenthesis (like modal operators). This is simply syntactic sugar. However
+the pretty printing will display negation as ¬P(x).
+
+
+PRELIMINARIES FOR PROVING THEOREMS
+
+A Theorem is an instance of the Proof class and contains the information of axioms, defined constants, functions and predicates,
+dependencies (theorems) and a the proof field (which may in fact contain several proofs in the logical sense).
+Theorems should be organised into groups (Theories) sharing the same axioms and defined symbols. Thus, before
+proving a theorem, we need to specify which theorems it will depend on. Ideally we should have a correct dependency tree in which
+all results rest on the axioms alone. The command to add theorems is Proof.AddTheorem.
+
+If we are working on implementing Kelley-Morse Set Theory and are working in classical logic it is convenient to have
+the law of the excluded middle as a theorem (it can howeverbe proven using the classical negation rule.). We also
+meet "polymorphic" predicate variables (see parser.predicatevariables) here which shall be explained later.
+To add a theorem:
+
+>>> Proof.AddTheorem("(A v neg A)")
+True
+>>> Proof.ShowTheorems()
+0. A v ¬A 
+
+Here A is a predicate variable. Suppose we wish to instantiate A. We first use Proof.TheoremInt and use Proof.ShowProof
+to display the state of our proof:
+
+>>> Proof.TheoremInt(0)
+True
+>>> Proof.ShowProof()
+0. A v ¬A TheoremInt 
+>>>
+
+We instantiate with Proof.PolySub:
+
+>>> Proof.PolySub(0,"A","(x = x)")
+True
+>>> Proof.ShowProof()
+0. A v ¬A TheoremInt 
+1. (x = x) v ¬(x = x) PolySub 0
+>>> 
+
+Now we can start proving theorems !
+
+EXAMPLE OF A PROOF
+
+We start with a very trivial "theorem". Theorem 4 of Kelley's General Topology Appendix, p.254.
+This theorem has two parts, each in the form of an equivalence (entered as "equiv" but displayed as "<->").
+We will deal only with the first part in this section.
+We must prove both directions separately.
+We first assume that an element z belongs to union(x,y).
+
+>>> Proof.Hyp("Elem(z, union(x,y))")
+True
+>>> Proof.ShowProof()
+0. z ε (x ∪ y) Hyp 
+
+Now we need to substitute the union for its definition.
+To do this we first introduce the defining equation. It is number 0 so we use:
+
+>>> Proof.DefEqInt(0)
+True
+>>> Proof.ShowProof()
+0. z ε (x ∪ y) Hyp 
+1. (x ∪ y) = {z: ((z ε x) v (z ε y))} DefEqInt 
+
+In accordance with natural deduction style treatment of equality we use the Equality Substitution Rule Proof.EqualitySub.
+This method takes three parameters. The number of the formula affected, the number of the definition formula and a list
+of places where the left side is to be replaced by the right side. Places are counted in programming style, from zero.
+Thus we get:
+
+>>> Proof.EqualitySub(0,1,[0])
+True
+>>> Proof.ShowProof()
+0. z ε (x ∪ y) Hyp 
+1. (x ∪ y) = {z: ((z ε x) v (z ε y))} DefEqInt 
+2. z ε {z: ((z ε x) v (z ε y))} EqualitySub 0 1
+
+We interpret the axiom scheme involving the extensional operator in Kelley-Morse Set Theory as two
+rules which introduce and eliminate the extensional operator. 
+
+>>> Proof.ClassElim(2)
+True
+>>> Proof.ShowProof()
+0. z ε (x ∪ y) Hyp 
+1. (x ∪ y) = {z: ((z ε x) v (z ε y))} DefEqInt 
+2. z ε {z: ((z ε x) v (z ε y))} EqualitySub 0 1
+3. Set(z) & ((z ε x) v (z ε y)) ClassElim 2
+
+We are only interested in the right-hand side of the conjunction so we apply AndElimR:
+
+>>> Proof.AndElimR(3)
+True
+>>> Proof.ShowProof()
+0. z ε (x ∪ y) Hyp 
+1. (x ∪ y) = {z: ((z ε x) v (z ε y))} DefEqInt 
+2. z ε {z: ((z ε x) v (z ε y))} EqualitySub 0 1
+3. Set(z) & ((z ε x) v (z ε y)) ClassElim 2
+4. (z ε x) v (z ε y) AndElimR 3
+
+For each step of the proof PyLog keeps tracks of the dependencies, the undischarged hypotheses used to derive the formula.
+Thus for 4 the dependency consits of 0. We now use the Implication Introduction rule:
+>>> Proof.ImpInt(4,0)
+True
+>>> Proof.ShowProof()
+0. z ε (x ∪ y) Hyp 
+1. (x ∪ y) = {z: ((z ε x) v (z ε y))} DefEqInt 
+2. z ε {z: ((z ε x) v (z ε y))} EqualitySub 0 1
+3. Set(z) & ((z ε x) v (z ε y)) ClassElim 2
+4. (z ε x) v (z ε y) AndElimR 3
+5. (z ε (x ∪ y)) -> ((z ε x) v (z ε y)) ImpInt 4
+
+We check if a formula has been proved (it has not dependencies) with the method Proof.Qed:
+
+>>> Proof.Qed(5)
+True
+>>> Proof.ShowProof()
+(...)
+5. (z ε (x ∪ y)) -> ((z ε x) v (z ε y)) ImpInt 4 Qed
+
+Now for the other direction.
+
+>>> Proof.Hyp("(Elem(z,x) v Elem(z,y))")
+
+(...)
+6. (z ε x) v (z ε y) Hyp 
+
+We want to use Proof.ClassInt now but we need to get a conjunction with Set(z). So we
+first must prove that Set(z). We do this using the OrElim rule. We assume
+each formula of the disjunction as hypothesis.
+
+>>> Proof.Hyp("Elem(z,x)")
+(...)
+7. z ε x Hyp 
+
+Now we introduce an exitential quantifier:
+
+>>> Proof.ExistsInt(7,"x","x",[0])
+
+the first parameter is the number of the formula, the second is the term to be replaced by a quantified variable, the third
+is the name of the new quantified variable and the last parameter is the list of places.
+
+(...)
+8. exists x.(z ε x) ExistsInt 7
+
+Now this is just the definition of z being a set.
+
+>>> Proof.DefSub(8, "Set",["z"],[0])
+
+(...)
+
+9. Set(z) DefSub 8
+
+Here Proof.DefSub takes the number of the formula affected, the name of the defined predicate to be inserted,
+the variable instance and finally the list of places where the expanded definition of the predicate occurs in the formula.
+
+We now do the same thing for
+ 
+>>> Proof.Hyp("Elem(z,y)")
+
+>>> Proof.ExistsInt(10,"y","y",[0])
+>>> Proof.DefSub(11, "Set",["z"],[0])
+
+We thus have:
+
+(...)
+7. z ε x Hyp 
+8. exists x.(z ε x) ExistsInt 7
+9. Set(z) DefSub 8
+10. z ε y Hyp 
+11. exists y.(z ε y) ExistsInt 10
+12. Set(z) DefSub 11
+
+Now it is time to appliy OrElim ! 
+
+In the source code we have:
+
+def OrElim(self, up, left, c1, right, c2):
+
+Here the formulas number c1 and c2 must be equal and up is the number of the disjunction hypothesis. In our
+case this becomes:
+
+>>> Proof.OrElim(6,7,9,10,12)
+(...)
+13. Set(z) OrElim 6 7 9 10 12
+
+Formula 13 depends now only on formula 6 as hypotheses 7 and 10 have been discharged (you can check this by using ImpInt and Qed) or
+investigating the information contained in the elements of Proof.proof.
+
+If we make a mistake in a rule we can remove the last formula with Proof.proof.pop(). But notice
+that proof elements have states which may have been permanently changed (we will explain this later when we discuss
+the various algorithms used in our implementation of linearised natural deduction). 
+There is a function Proof.Undo() to undo the last command which involves eliminating its number from the discharchedby fields of
+all the previous proofelements (if necessary).
+
+We now do 
+
+>>> Proof.AndInt(13,6)
+
+to get
+
+14. Set(z) & ((z ε x) v (z ε y)) AndInt 13 6
+
+Finally we can apply Proof.ClassInt
+
+>>> Proof.ClassInt(14,"z")
+
+to get
+
+15. z ε {z: ((z ε x) v (z ε y))} ClassInt 14
+
+Now we just need to use EqualitySub again but this time not with 1 but with its symmetric:
+
+>>> Proof.Symmetry(1)
+
+(...)
+
+15. z ε {z: ((z ε x) v (z ε y))} ClassInt 14
+16. {z: ((z ε x) v (z ε y))} = (x ∪ y) Symmetry 1
+
+>>> Proof.EqualitySub(15,16,[0])
+
+(...)
+
+17. z ε (x ∪ y) EqualitySub 15 16
+
+Hence
+
+>>> Proof.ImpInt(17,6)
+
+yields finally
+
+18. ((z ε x) v (z ε y)) -> (z ε (x ∪ y)) ImpInt 17 
+
+and we can check the proof with Proof.Qed(18).
+
+We then combine formulas 5 and 18 with Proof.AndInt(5,18) to get:
+
+19. ((z ε (x ∪ y)) -> ((z ε x) v (z ε y))) & (((z ε x) v (z ε y)) -> (z ε (x ∪ y))) AndInt 5 18
+
+Our last step is to collapse this into an equivalence:
+
+>>> Proof.EquivCont(19)
+>>> Proof.Qed(20)
+
+(...)
+
+20. (z ε (x ∪ y)) <-> ((z ε x) v (z ε y)) EquivCont Qed
+
+ANOTHER EXAMPLE
+
+Let us prove that the russell class is not a set.
+Start a new session and load the Kelley-Morse system.
+We first must add a new constant rus for the russell class.
+
+>>> Proof.AddConstants(["rus"])
+
+Then the definition
+
+>>> Proof.NewDefEq("rus = extension x. neg Elem(x,x)")
+
+It is left as an exercise (using the commands of the previous section) to produce the following proof:
+
+>>> Proof.ShowProof()
+0. Set(rus) Hyp 
+1. ¬(rus ε rus) Hyp 
+2. Set(rus) & ¬(x ε x) AndInt 0 1
+3. rus ε {x: ¬(x ε x)} ClassInt 2
+4. rus = {x: ¬(x ε x)} DefEqInt 
+5. {x: ¬(x ε x)} = rus Symmetry 4
+6. rus ε rus EqualitySub 3 5
+7. _|_ ImpElim 6 1
+8. rus ε rus Hyp 
+9. rus ε {x: ¬(x ε x)} EqualitySub 8 4
+10. Set(rus) & ¬(rus ε rus) ClassElim 9
+11. ¬(rus ε rus) AndElimR 10
+12. _|_ ImpElim 8 11
+13. A v ¬A TheoremInt 
+14. (rus ε rus) v ¬(rus ε rus) PolySub 13
+15. _|_ OrElim 14 8 12 1 7
+16. ¬Set(rus) ImpInt 15 Qed
+
+Notice that when applying OrElim be careful that the order is correct. The left formula in the
+disjunction 14 must be the hypothesis in the second parameter (in this case 8).
+
+
+THE REMAINING RULES
+
+We must still explain the rules ForallInt, ForallElim, ExistsElim, PredSub, Identity and the two absurdity rules AbsI and AbsC.
+Also the two easy rules OrIntL and OrElimL and AxInt.
+
+Here is a proof that uses OrIntL, ForallInt, ForallElim and AxInt.
+
+>>> Proof.ShowProof()
+0. z ε (x ∪ x) Hyp 
+1. ((z ε (x ∪ y)) <-> ((z ε x) v (z ε y))) & ((z ε (x ∩ y)) <-> ((z ε x) & (z ε y))) TheoremInt 
+2. (z ε (x ∪ y)) <-> ((z ε x) v (z ε y)) AndElimL 1
+3. ((z ε (x ∪ w)) -> ((z ε x) v (z ε w))) & (((z ε x) v (z ε w)) -> (z ε (x ∪ w))) EquivExp 
+4. (z ε (x ∪ w)) -> ((z ε x) v (z ε w)) AndElimL 3
+5. forall w.((z ε (x ∪ w)) -> ((z ε x) v (z ε w))) ForallInt 4
+6. (z ε (x ∪ x)) -> ((z ε x) v (z ε x)) ForallElim 5
+7. (z ε x) v (z ε x) ImpElim 0 6
+8. z ε x Hyp 
+9. z ε x OrElim 7 8 8 8 8
+10. (z ε (x ∪ x)) -> (z ε x) ImpInt 9 Qed
+11. z ε x Hyp 
+12. (z ε x) v (z ε x) OrIntL 11
+13. ((z ε x) v (z ε w)) -> (z ε (x ∪ w)) AndElimR 3
+14. forall w.(((z ε x) v (z ε w)) -> (z ε (x ∪ w))) ForallInt 13
+15. ((z ε x) v (z ε x)) -> (z ε (x ∪ x)) ForallElim 14
+16. z ε (x ∪ x) ImpElim 12 15
+17. (z ε x) -> (z ε (x ∪ x)) ImpInt 16 Qed
+18. ((z ε (x ∪ x)) -> (z ε x)) & ((z ε x) -> (z ε (x ∪ x))) AndInt 10 17
+19. (z ε (x ∪ x)) <-> (z ε x) EquivConst  Qed
+20. forall z.((z ε (x ∪ x)) <-> (z ε x)) ForallInt 19 Qed
+21. forall x.forall y.((x = y) <-> forall z.((z ε x) <-> (z ε y))) AxInt 
+22. forall y.(((x ∪ x) = y) <-> forall z.((z ε (x ∪ x)) <-> (z ε y))) ForallElim 21
+23. ((x ∪ x) = x) <-> forall z.((z ε (x ∪ x)) <-> (z ε x)) ForallElim 22
+24. (((x ∪ x) = x) -> forall z.((z ε (x ∪ x)) <-> (z ε x))) & (forall z.((z ε (x ∪ x)) <-> (z ε x)) -> ((x ∪ x) = x)) EquivExp 
+25. forall z.((z ε (x ∪ x)) <-> (z ε x)) -> ((x ∪ x) = x) AndElimR 24
+26. (x ∪ x) = x ImpElim 20 25 Qed
+
+The specification of ForallInt is
+
+ForallInt(formula_number, variable_to_be_bound, new_bound_variable)
+
+Here new_bound_variable is either equal to variable_to_be_bound or a variable in parser.variables which is not a constant and not free in the formula.
+PyLog will check if variable_to_be_bound occurs free in any hypothesis on which the formula depends.
+
+The specification of ForallElim is
+
+ForallElim(formula_number, term_to_be_substituted_for_the_bound_variable)
+
+
+Here is a proof that uses ExistsInt(existential_formula, instance, conclusion, instantiation_term)
+
+0. Set(x) Hyp 
+1. z ⊂ x Hyp 
+2. Set(x) -> exists y.(Set(y) & forall z.((z ⊂ x) -> (z ε y))) AxInt 
+3. exists y.(Set(y) & forall z.((z ⊂ x) -> (z ε y))) ImpElim 0 2
+4. Set(y) & forall z.((z ⊂ x) -> (z ε y)) Hyp 
+5. forall z.((z ⊂ x) -> (z ε y)) AndElimR 4
+6. (z ⊂ x) -> (z ε y) ForallElim 5
+7. z ε y ImpElim 1 6
+8. exists y.(z ε y) ExistsInt 7
+9. Set(z) DefSub 8
+10. Set(z) ExistsElim 3 4 9
+11. (z ⊂ x) -> Set(z) ImpInt 10
+12. Set(x) -> ((z ⊂ x) -> Set(z)) ImpInt 11 Qed
+
+WARNING !
+
+When using DefSub a multiple substitution is carried out which is not perfect simultaneous substitution but rather successive substitution.
+Thus it is advisable to use parameter variables in the definitions which are not used in the proofs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
