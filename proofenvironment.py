@@ -4,10 +4,28 @@ import astop
 import pickle
 import copy
 import os
+import inspect
 
 def Intersect(list1,list2):
  return [x for x in list1 if x in list2]
+ 
+def PrintNumList(list):
+ out = "[" 
+ for x in list:
+  out = out + str(x) + ","
+ out1 = out[:len(out)-1]
+ return out1 +"]"
 
+ 
+def PrintStrList(list):
+ out = "[" 
+ for x in list:
+  out = out + '"'+ str(x) + '"' + ","
+ out1 = out[:len(out)-1]
+ return out1 +"]"
+  
+ 
+  
 class ProofElement:
   def __init__(self,name,dependencies,parameters,discharging,formula):
         self.name = name
@@ -71,12 +89,14 @@ class ProofEnvironment:
         proofelement = ProofElement("Hyp",[],[],[], form)
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
+        self.log.append("Hyp(" + '"' + formstring + '"' + ")")
         return True
         
 
  def NewAx(self,formstring):
         form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring)))
         self.axioms.append(form)
+        self.log.append("NewAx(" + +'"' +formstring + '"' +")")
         return True
 
 
@@ -84,6 +104,7 @@ class ProofEnvironment:
         proofelement = ProofElement("AxInt",[],[],[], self.axioms[axnum])
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
+        self.log.append("AxInt(" + str(axnum) +")")
         return True 
  
 
@@ -91,6 +112,7 @@ class ProofEnvironment:
         proofelement = ProofElement("EquivExp",[],[],[], astop.ExpandEquiv(self.proof[up].formula))
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
+        self.log.append("EquivExp(" + str(up) +")")
         return True 
   
 
@@ -98,6 +120,7 @@ class ProofEnvironment:
         proofelement = ProofElement("EquivConst",[],[],[], astop.CreateEquiv(self.proof[up].formula))
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
+        self.log.append("EquivConst(" + str(up) +")")
         return True 
   
   
@@ -106,11 +129,13 @@ class ProofEnvironment:
          proofelement = ProofElement("DefEqInt",[],[],[], self.definitionequations [axnum])
          proofelement.pos = len(self.proof) + 1
          self.proof.append(proofelement)
+         self.log.append("DefEqInt(" + str(axnum) +")")
          return True             
 
  def AddTheorem(self,formstring):
          form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring))) 
          self.theorems.append(form)
+         self.log.append("AddTheorem(" + '"' + formstring + '"' + ")")
          return True
 
 
@@ -118,6 +143,7 @@ class ProofEnvironment:
          proofelement = ProofElement("TheoremInt",[],[],[], self.theorems[axnum])
          proofelement.pos = len(self.proof) + 1
          self.proof.append(proofelement)
+         self.log.append("TheoremInt(" + str(axnum) +")")
          return True       
                 
  def Qed(self,up):
@@ -131,6 +157,7 @@ class ProofEnvironment:
   proofelement = ProofElement("AndInt",[left,right],[],[], form)
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
+  self.log.append("AndInt(" +str(left) +","+str(right) + ")")
   return True
 
 
@@ -138,12 +165,14 @@ class ProofEnvironment:
   proofelement = ProofElement("AndElimL",[up],[],[], self.proof[up].formula.left)  
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
+  self.log.append("AndElimL(" + str(up) +")")
   return True
 
  def AndElimR (self,up):
   proofelement = ProofElement("AndElimR",[up],[],[], self.proof[up].formula.right)
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
+  self.log.append("AndElimR(" + str(up) +")")
   return True
 
  def ImpElim (self, left,right):
@@ -151,6 +180,7 @@ class ProofEnvironment:
    proofelement = ProofElement("ImpElim",[left,right],[],[], self.proof[right].formula.right)
    proofelement.pos = len(self.proof) + 1
    self.proof.append(proofelement)
+   self.log.append("ImpElim(" +str(left) +","+str(right) + ")")
    return True
 
  def ImpInt(self,up,dis):
@@ -162,6 +192,7 @@ class ProofEnvironment:
     proofelement.pos = len(self.proof) + 1
     self.proof[dis].dischargedby.append(proofelement.pos-1)
     self.proof.append(proofelement)
+    self.log.append("ImpInt(" +str(up) +","+str(dis) + ")")
     return True
 
  def OrIntR(self, up,formstring):
@@ -169,6 +200,7 @@ class ProofEnvironment:
     proofelement = ProofElement("OrIntR",[up],[],[], aux)
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
+    self.log.append("OrIntR(" + str(up) + "," + '"' + formstring + '"' + ")")
     return True
     
 
@@ -177,6 +209,7 @@ class ProofEnvironment:
     proofelement = ProofElement("OrIntL",[up],[],[], aux)
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
+    self.log.append("OrIntL(" + str(up) + "," + '"'+ formstring + '"' + ")")
     return True
         
 
@@ -193,6 +226,7 @@ class ProofEnvironment:
       self.proof[left].dischargedby.append(proofelement.pos)
       self.proof[right].dischargedby.append(proofelement.pos)
       self.proof.append(proofelement)
+      self.log.append("OrElim(" + str(up) + "," + str(left) + "," + str(c1) + "," + str(right) + "," + str(c2) + ")")
       return True
       
  def ForallElim (self, up,termstring):
@@ -202,6 +236,7 @@ class ProofEnvironment:
     proofelement = ProofElement("ForallElim", [up],[term],[], astop.Substitution( astop.Free(form.children[0],[]) , form.operator.variable, term) )
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
+    self.log.append("ForallElim(" + str(up) +"," + '"' + termstring +'"' +")")
     return True
 
  def ExistsInst (self, up, newvar):
@@ -211,6 +246,7 @@ class ProofEnvironment:
     proofelement = ProofElement("Hyp", [],[],[], astop.Substitution( astop.Free(form.children[0],[]) , form.operator.variable, term) )
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
+    self.log.append("ExistsInst(" + str(up) +"," + '"' + newvar +'"' + ")")
     return True         
 
  def ForallInt (self, up, variablestring, quantvarstring):
@@ -235,30 +271,11 @@ class ProofEnvironment:
      proofelement = ProofElement("ForallInt", [up],[variable,quantvar],[], aux2) 
      proofelement.pos = len(self.proof) + 1
      self.proof.append(proofelement)
+     self.log.append("ForallInt(" + str(up) + "," + '"' + variablestring +'"' +"," + '"' + quantvarstring +'"' + ")")
      return True
      
      
 
- def Necessitation (self, up):
-     for h in self.GetHypDep(self.proof[up]):
-      if not self.proof[h].formula.name =="constructor":
-        return 
-      if not (self.proof[h].formula.operator.name =="square"  or parser.CheckNegSquare(self.proof[h].formula)):
-         return    
-     aux = parser.Formula(tokenizer.Tokenize("square "+ parser.Printout(self.proof[up].formula) ))
-     proofelement = ProofElement("Necessitation", [up],[],[], aux) 
-     proofelement.pos = len(self.proof) + 1
-     self.proof.append(proofelement)
-     return True     
-     
-     
- def NecElim(self,up):
-   if not parser.CheckSquare(self.proof[up].formula):
-      return None
-   proofelement = ProofElement("NecElim", [up],[],[], self.proof[up].formula.children[0]) 
-   proofelement.pos = len(self.proof) + 1
-   self.proof.append(proofelement)
-   return True            
 
  def ExistsElim(self,exists, sub, concl, inststring):
   if not self.proof[exists].formula.operator.name=="exists":
@@ -284,6 +301,7 @@ class ProofEnvironment:
   proofelement.pos = len(self.proof) +1
   self.proof[sub].dischargedby.append(proofelement.pos)
   self.proof.append(proofelement)
+  self.log.append("ExistsElim(" + str(exists) + "," + str(sub) +"," + str(concl) + "," + '"' + inststring +'"' + ")")
   return True
 
  def ExistsInt(self,up,termstring,newvarname,places):
@@ -300,6 +318,7 @@ class ProofEnvironment:
   proofelement = ProofElement("ExistsInt", [up],[termstring,newvarname,places],[], out)
   proofelement.pos = len(self.proof) +1
   self.proof.append(proofelement)
+  self.log.append("ExistsInt(" + str(up) + "," + '"' + termstring + '"'+ "," + '"' + newvarname + '"' + "," + PrintNumList(places) +")")
   return True
 
 
@@ -308,6 +327,7 @@ class ProofEnvironment:
      proofelement = ProofElement("AbsI", [up],[formstring],[], Formula(formstring))
      proofelement.pos = len(self.proof) +1
      self.proof.append(proofelement)
+     self.log.append("AbsI(" + str(up) + "," + '"' + formstring +'"'+")")
      return True
         
  def AbsC(self,abs,neghyp):
@@ -320,6 +340,7 @@ class ProofEnvironment:
                 proofelement.pos = len(self.proof) + 1
                 self.proof[neghyp].dischargedby.append(proofelement.pos)
                 self.proof.append(proofelement)
+                self.log.append("AbsC(" + str(abs) + "," + str(neghyp) + ")")
                 return True
                    
 
@@ -334,6 +355,7 @@ class ProofEnvironment:
    proofelement= ProofElement("Symmetry", [up],[],[], aux)
    proofelement.pos = len(self.proof) + 1
    self.proof.append(proofelement)
+   self.log.append("Symmetry(" + str(up) + ")")
    return True
 
  
@@ -342,6 +364,7 @@ class ProofEnvironment:
       proofelement= ProofElement("Identity", [],[termstring], [],aux)
       proofelement.pos = len(self.proof) + 1
       self.proof.append(proofelement)
+      self.log.append("Identity(" + '"' + termstring +'"' + ")")
       return True
 
  def EqualitySub(self, up, eq , places):
@@ -355,6 +378,7 @@ class ProofEnvironment:
      proofelement = ProofElement("EqualitySub" , [up,eq],[places], [],formula)
      proofelement.pos = len(self.proof) + 1
      self.proof.append(proofelement)
+     self.log.append("EqualitySub(" + str(up) +"," + str(eq) + "," + PrintNumList(places) + ")")
      return True
 
  def ShowProof(self):
@@ -366,6 +390,12 @@ class ProofEnvironment:
     print(str(n)+". "+parser.PrettyPrintout(p.formula) +" "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]))      
    n = n + 1
    
+ def ShowLog(self):
+  n = 0        
+  for l in self.log:
+    print(str(n) + ". " + l)
+    n = n + 1      
+           
  def ShowLast(self):
    n = len(self.proof)
    print(str(n)+". "+parser.PrettyPrintout(p.formula) +" "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]))         
@@ -399,6 +429,7 @@ class ProofEnvironment:
    proofelement = ProofElement("DefSub" , [up],[conceptname,args,positions], [],aux)
    proofelement.pos = len(self.proof) + 1
    self.proof.append(proofelement)
+   self.log.append("DefSub(" + str(up) + "," + '"' +conceptname +'"' +  "," + PrintStrList(strargs) + "," + PrintNumList(positions) + ")")
    return True
    
  def DefExp(self,up,conceptname,positions):
@@ -408,6 +439,7 @@ class ProofEnvironment:
    proofelement = ProofElement("DefExp" , [up],[conceptname,positions], [],aux)
    proofelement.pos = len(self.proof) + 1
    self.proof.append(proofelement)
+   self.log.append("DefExp(" + str(up) + "," + '"' +conceptname + '"' + "," + PrintNumList(positions) +")")
    return True
     
  def NewDef(self, predname,args,formstring):
@@ -415,6 +447,7 @@ class ProofEnvironment:
   self.AddVariables(args)    
   form = astop.NegationExpand(Formula(formstring))  
   self.definitions[predname]={"formula":form, "arguments":args}
+  self.log.append("NewDef(" + '"' +  predname+'"' + "," + PrintStrList(args) + "," + '"' + formstring+'"' + ")")
   return True 
  
  def NewDefEq(self,equationstring):
@@ -427,6 +460,7 @@ class ProofEnvironment:
       return None
   
   self.definitionequations.append(astop.NegationExpand(Formula(equationstring)))            
+  self.log.append("NewDefEq(" + '"' + equationstring + '"' + ")")
   return True
  
  #Also DelDef, DelAx, DelTheorem, Del EqDef
@@ -437,6 +471,7 @@ class ProofEnvironment:
   proofelement = ProofElement("PredSub" , [up],[predicatename,arguments,formstring,positions], [],aux)
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
+  self.log.append("PredSub(" + str(up) + "," + '"'+ predicatenmae +'"' +"," + PrintStrList(arguments) +"," + '"'+ formstring+'"' + "," + PrintNumList(positions) + ")")
   return True 
  
  def AddVariables(self,varlist): 
@@ -463,7 +498,8 @@ class ProofEnvironment:
    
  def Save(self,name):    
    f = open(name,'wb')
-   data = {"variables":parser.variables, "constants":parser.constants, "predicatevariables":parser.predicatevariables, "functions": parser.functions,  "predicates":parser.predicates, "pretty":parser.pretty,  "proofenv":self}
+   data = {"variables":parser.variables, "constants":parser.constants, "predicatevariables":parser.predicatevariables, 
+   "functions": parser.functions,  "predicates":parser.predicates, "pretty":parser.pretty,  "proofenv":self}
    pickle.dump(data,f)
    f.close()
    return True 
@@ -517,6 +553,7 @@ class ProofEnvironment:
             proofelement = ProofElement("ClassElim" , [up],[], [],aux)
             proofelement.pos = len(self.proof) + 1
             self.proof.append(proofelement)
+            self.log.append("ClassElim(" + str(up) + ")")
             return True
    
  def ClassInt(self,up,newvarname):
@@ -533,6 +570,7 @@ class ProofEnvironment:
              proofelement = ProofElement("ClassInt" , [up],[newvarname], [],aux)
              proofelement.pos = len(self.proof) + 1
              self.proof.append(proofelement)
+             self.log.append("ClassInt(" + str(up) + "," + '"' +newvarname +'"' + ")")
              return True            
    
         if form.right.name=="constructor": 
@@ -544,6 +582,7 @@ class ProofEnvironment:
              proofelement = ProofElement("ClassInt" , [up],[newvarname], [],aux)
              proofelement.pos = len(self.proof) + 1
              self.proof.append(proofelement)
+             self.log.append("ClassInt(" + str(up) + "," + '"' + newvarname + '"' + ")")
              return True            
         
  
@@ -613,7 +652,8 @@ class ProofEnvironment:
    Proof.proof.pop()
    for p in Proof.proof:
      if n in p.dischargedby:  
-      p.dischargedby.remove(n) 
+      p.dischargedby.remove(n)
+   Proof.log.pop()       
    return True
            
 def Formula(string):
@@ -645,6 +685,9 @@ print("")
 print("(c) 2020  C. Lewis Protin")
 print("")
 
+
+def ShowLog():
+ return Proof.ShowLog()
 def GetHypDep(up):
  return Proof.GetHypDep(Proof.proof[up])      
 def Hyp(form):
