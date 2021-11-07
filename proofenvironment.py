@@ -135,7 +135,6 @@ class ProofEnvironment:
  def AddTheorem(self,formstring):
          form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring))) 
          self.theorems.append(form)
-         self.log.append("AddTheorem(" + '"' + formstring + '"' + ")")
          return True
 
 
