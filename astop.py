@@ -194,6 +194,23 @@ def BasicSubstitutionByPosition(ast,old,fresh,positions):
   return ast
 
 
+def GetPolyVars(ast):
+ if type(ast).__name__ =="Leaf":
+    if ast.type=="Formula":
+     return [ast.name]
+    else:
+     return []
+ else:     
+  aux =[GetPolyVars(x) for x in ast.children]
+  aux2 = []
+  for x in aux:
+   for y in x:
+    aux2.append(y)
+  return aux2       
+     
+
+
+
 def GetFreeVars(ast,typ):
  if type(ast).__name__== "Leaf":
   if ast.free==True and ast.type==typ:

@@ -588,11 +588,15 @@ class ProofEnvironment:
    
    
  def PolySub(self,up,polyvarname,formstring):
+     for h in self.GetHypDep(self.proof[up]):
+      if polyvarname in astop.GetPolyVars(self.proof[h].formula):
+       return None            
      form = copy.deepcopy(self.proof[up].formula)
      aux = astop.Substitution(form, Formula(polyvarname),Formula(formstring)) 
      proofelement = ProofElement("PolySub" , [up],[polyvarname,formstring], [],aux)
      proofelement.pos = len(self.proof) + 1
      self.proof.append(proofelement)
+     self.log.append("PolySub(" + str(up) + "," + '"' + polyvarname + '"' + "," + '"' + formstring +'"'+ ")")
      return True   
  
       
