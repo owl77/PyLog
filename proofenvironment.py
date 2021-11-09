@@ -592,7 +592,7 @@ class ProofEnvironment:
       if polyvarname in astop.GetPolyVars(self.proof[h].formula):
        return None            
      form = copy.deepcopy(self.proof[up].formula)
-     aux = astop.Substitution(form, Formula(polyvarname),Formula(formstring)) 
+     aux = astop.Substitution(form, Formula(polyvarname),astop.NegationExpand(Formula(formstring))) 
      proofelement = ProofElement("PolySub" , [up],[polyvarname,formstring], [],aux)
      proofelement.pos = len(self.proof) + 1
      self.proof.append(proofelement)
