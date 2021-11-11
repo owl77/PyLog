@@ -45,6 +45,7 @@ class Sequent:
     self.body = body
     self.id = 0
     self.parent = 0
+    self.ancestors = []
     self.rule = ""
  def display(self):
   aux = ""
@@ -280,7 +281,7 @@ def RuleDisplay(code):
     if code[1] == 1:
       return "lor(" + str(n) + "," + str(m) + ")"  
     if code[1] == 2:
-      return "imp(" + str(n) + "," + str(m) + ")"  
+      return "limp(" + str(n) + "," + str(m) + ")"  
     if code[1] == 3:
       return "labs(" + str(n) + "," + str(m) + ")"  
     if code[1] == 4:
@@ -348,7 +349,7 @@ def Rand(seq,n):
          new2.id = next(seq.used)
          new2.parent = seq.sequentlist[n].id
          seq.used.append(new2.id)
-         
+         seq.sequentlist[n].rule ="Rand"
          seq.collection.append(seq.sequentlist[n])
          seq.sequentlist = aux1 + [new1,new2] + aux2
         
@@ -365,6 +366,7 @@ def Ror1(seq,n):
           new1.id = next(seq.used)
           new1.parent = seq.sequentlist[n].id
           seq.used.append(new1.id)
+          seq.sequentlist[n].rule ="Ror1"
           seq.collection.append(seq.sequentlist[n])
           seq.sequentlist = aux1 + [new1] + aux2
           
@@ -381,6 +383,7 @@ def Ror2(seq,n):
           new1.id = next(seq.used)
           new1.parent = seq.sequentlist[n].id
           seq.used.append(new1.id)
+          seq.sequentlist[n].rule ="Ror2"
           seq.collection.append(seq.sequentlist[n])   
           seq.sequentlist = aux1 + [new1] + aux2
           
@@ -399,6 +402,7 @@ def Rimp(seq,n):
            new1.id = next(seq.used)
            new1.parent = seq.sequentlist[n].id
            seq.used.append(new1.id)
+           seq.sequentlist[n].rule ="Rimp"
            seq.collection.append(seq.sequentlist[n]) 
            seq.sequentlist = aux1 + [new1] + aux2
            
@@ -419,6 +423,7 @@ def Land(seq,n,m):
            new1.id = next(seq.used)
            new1.parent = seq.sequentlist[n].id
            seq.used.append(new1.id)
+           seq.sequentlist[n].rule ="Land" + str(m)
            seq.collection.append(seq.sequentlist[n]) 
            seq.sequentlist = aux1 + [new1] + aux2
            
@@ -446,6 +451,7 @@ def Lor(seq,n,m):
            new2.id = next(seq.used)
            new2.parent = seq.sequentlist[n].id
            seq.used.append(new2.id)
+           seq.sequentlist[n].rule ="Lor" + str(m)
            seq.collection.append(seq.sequentlist[n])
            seq.sequentlist = aux1 + [new1,new2] + aux2
           
@@ -470,7 +476,8 @@ def Limp(seq,n,m):
            seq.used.append(new1.id)
            new2.id = next(seq.used)
            new2.parent = seq.sequentlist[n].id
-           seq.used.append(new1.id)
+           seq.used.append(new2.id)
+           seq.sequentlist[n].rule ="Limp" + str(m)
            seq.collection.append(seq.sequentlist[n]) 
            seq.sequentlist = aux1 + [new1,new2] + aux2
            
@@ -482,7 +489,7 @@ def Labs(seq,n,m):
            aux1 = seq.sequentlist[:n]
            aux2 = seq.sequentlist[n+1:]
            
-          
+           seq.sequentlist[n].rule ="Labs" + str(m)
            seq.collection.append(seq.sequentlist[n])
            seq.sequentlist = aux1 +  aux2
            return seq
@@ -493,6 +500,7 @@ def Ax(seq,n,m):
            form = seq.sequentlist[n].display()        
            aux1 = seq.sequentlist[:n]
            aux2 = seq.sequentlist[n+1:]
+           seq.sequentlist[n].rule ="Ax" + str(m)
            seq.collection.append(seq.sequentlist[n])
            seq.sequentlist = aux1 +  aux2
           
@@ -525,24 +533,67 @@ def TreeCodeApply(code,seq):
 def Generate(proof,seq):
  if len(proof) == 0:
   return seq
- newseq = copy.deepcopy(TreeCodeApply(proof[0],seq))
+ aux = copy.deepcopy(seq) 
+ newseq = copy.deepcopy(TreeCodeApply(proof[0],aux))
  return Generate(proof[1:],newseq)
+ 
+def DispAnc(list):
+ if len(list) == 0:
+  return ""
+ return str(list[0]) + " " + DispAnc(list[1:])  
  
 def DisplayLinear(seq):
  for p in seq.collection:
-  print(str(p.id) +". " + p.display() + "   " + str(p.parent) )     
+  print(str(p.id) +". " + p.display() + "   " + p.rule + "  " + DispAnc(p.ancestors) )     
 
-
-
+def Min(list):
+ if len(list) == 0:
+  return 0    
+ min = list[0].id
+ for n in range(1,len(list)):
+  if list[n].id < min:
+   min = list[n].id
+ return min
+ 
+def Order(col):
+ if len(col) ==0 or len(col) ==1:
+   return col
+ if col[0].id < Min( col[1:] ):
+  return [col[0]] + Order(copy.deepcopy(col[1:]))  
+ else:
+  aux = col[0]
+  aux1 = col[1]
+  return Order([aux1] + Order([aux] + copy.deepcopy(col[2:])))
+           
+           
+ 
+    
+def Invert(seq):
+ size = len(seq.collection)-1
+ for p in seq.collection:    
+  p.id = size - p.id
+  p.parent = size -p.parent
+ for p in seq.collection:
+  for q in seq.collection:
+   if q.parent == p.id:
+      p.ancestors.append(q.id)
+ for p in seq.collection:
+    if p.id in p.ancestors:
+      p.ancestors.remove(p.id)      
+ return seq      
+ 
+ 
+ 
+ 
 def Prove():
  global State 
  x = search(State)[1]   
  RulesDisplay(x)
  print("")
- DisplayLinear(Generate(x,State)) 
+ tree = Invert(Generate(x,State))
+ tree2 = copy.deepcopy(tree)
+ tree2.collection = Order(tree.collection)
+ DisplayLinear(tree2)
+  
         
      
-         
-
-            
-            
