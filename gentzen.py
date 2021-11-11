@@ -253,8 +253,9 @@ def search(seq):
      return [True, seq.proof]
    for s in range(0,len(seq.sequentlist)):
        
-    
-     for f in range(0,len(seq.sequentlist[s].body)):
+    if seq.sequentlist[s].head.name !="constructor":
+     
+      for f in range(0,len(seq.sequentlist[s].body)):
       
        for app in range(0,5):
       
@@ -266,7 +267,7 @@ def search(seq):
              return search(newseq)    
              
         
-     for app in range(0,4):   
+    for app in range(0,4):   
        
              
         newseq = CodeApply(["u",app,s], seq)
