@@ -673,7 +673,7 @@ class ProofEnvironment:
   
  def FreeSub(self,up, freevar,instance):
   self.ForallInt(up,freevar,freevar)
-  self.ForallElim(up+1,instance) 
+  self.ForallElim(len(self.proof)-1,instance) 
   return True     
  
  def EquivJoin(self,left,right):
@@ -959,7 +959,9 @@ def PolySub(up,polyvarname,formstring):
         ShowProof()
         return True
 def LoadTheorem(name):
-    return Proof.LoadTheorem(name)
+    if Proof.LoadTheorem(name):
+     print(str(len(Proof.theorems)-1) + ". " + parser.PrettyPrintout(Proof.theorems[len(Proof.theorems) -1]))
+     return True
 def FreeSub(up,freevar,instance):
     if Proof.FreeSub(up,freevar,instance):
         ShowProof()
