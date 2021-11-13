@@ -813,7 +813,7 @@ def TheoremInt(axnum):
               
 def Qed(up):
      if Proof.Qed(up):
-      ShowLast()
+      ShowProof()
       return True
        
 def AndInt(left,right):
