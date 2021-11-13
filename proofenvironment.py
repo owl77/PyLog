@@ -90,6 +90,7 @@ class ProofEnvironment:
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
         self.log.append("Hyp(" + '"' + formstring + '"' + ")")
+        
         return True
         
 
@@ -97,6 +98,7 @@ class ProofEnvironment:
         form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring)))
         self.axioms.append(form)
         self.log.append("NewAx(" + +'"' +formstring + '"' +")")
+        
         return True
 
 
@@ -105,6 +107,7 @@ class ProofEnvironment:
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
         self.log.append("AxInt(" + str(axnum) +")")
+        
         return True 
  
 
@@ -113,6 +116,7 @@ class ProofEnvironment:
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
         self.log.append("EquivExp(" + str(up) +")")
+        
         return True 
   
 
@@ -121,6 +125,7 @@ class ProofEnvironment:
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
         self.log.append("EquivConst(" + str(up) +")")
+        
         return True 
   
   
@@ -130,11 +135,13 @@ class ProofEnvironment:
          proofelement.pos = len(self.proof) + 1
          self.proof.append(proofelement)
          self.log.append("DefEqInt(" + str(axnum) +")")
+         
          return True             
 
  def AddTheorem(self,formstring):
          form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring))) 
          self.theorems.append(form)
+         
          return True
 
 
@@ -143,6 +150,7 @@ class ProofEnvironment:
          proofelement.pos = len(self.proof) + 1
          self.proof.append(proofelement)
          self.log.append("TheoremInt(" + str(axnum) +")")
+         
          return True       
                 
  def Qed(self,up):
@@ -157,6 +165,7 @@ class ProofEnvironment:
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
   self.log.append("AndInt(" +str(left) +","+str(right) + ")")
+  
   return True
 
 
@@ -165,6 +174,7 @@ class ProofEnvironment:
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
   self.log.append("AndElimL(" + str(up) +")")
+  
   return True
 
  def AndElimR (self,up):
@@ -172,16 +182,19 @@ class ProofEnvironment:
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
   self.log.append("AndElimR(" + str(up) +")")
+ 
   return True
 
  def ImpElim (self, left,right):
+ 
   if self.proof[right].formula.operator.name =="->" and  astop.Equals(self.proof[right].formula.left ,self.proof[left].formula):
    proofelement = ProofElement("ImpElim",[left,right],[],[], self.proof[right].formula.right)
    proofelement.pos = len(self.proof) + 1
    self.proof.append(proofelement)
    self.log.append("ImpElim(" +str(left) +","+str(right) + ")")
+   
    return True
-
+  
  def ImpInt(self,up,dis):
   if not self.proof[dis].name=="Hyp":
    return None
@@ -192,6 +205,7 @@ class ProofEnvironment:
     self.proof[dis].dischargedby.append(proofelement.pos-1)
     self.proof.append(proofelement)
     self.log.append("ImpInt(" +str(up) +","+str(dis) + ")")
+    
     return True
 
  def OrIntR(self, up,formstring):
@@ -200,6 +214,7 @@ class ProofEnvironment:
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
     self.log.append("OrIntR(" + str(up) + "," + '"' + formstring + '"' + ")")
+    
     return True
     
 
@@ -209,6 +224,7 @@ class ProofEnvironment:
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
     self.log.append("OrIntL(" + str(up) + "," + '"'+ formstring + '"' + ")")
+    
     return True
         
 
@@ -226,6 +242,7 @@ class ProofEnvironment:
       self.proof[right].dischargedby.append(proofelement.pos)
       self.proof.append(proofelement)
       self.log.append("OrElim(" + str(up) + "," + str(left) + "," + str(c1) + "," + str(right) + "," + str(c2) + ")")
+      
       return True
       
  def ForallElim (self, up,termstring):
@@ -236,6 +253,7 @@ class ProofEnvironment:
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
     self.log.append("ForallElim(" + str(up) +"," + '"' + termstring +'"' +")")
+    
     return True
 
  def ExistsInst (self, up, newvar):
@@ -246,6 +264,7 @@ class ProofEnvironment:
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
     self.log.append("ExistsInst(" + str(up) +"," + '"' + newvar +'"' + ")")
+    
     return True         
 
  def ForallInt (self, up, variablestring, quantvarstring):
@@ -271,6 +290,7 @@ class ProofEnvironment:
      proofelement.pos = len(self.proof) + 1
      self.proof.append(proofelement)
      self.log.append("ForallInt(" + str(up) + "," + '"' + variablestring +'"' +"," + '"' + quantvarstring +'"' + ")")
+     
      return True
      
      
@@ -301,6 +321,7 @@ class ProofEnvironment:
   self.proof[sub].dischargedby.append(proofelement.pos)
   self.proof.append(proofelement)
   self.log.append("ExistsElim(" + str(exists) + "," + str(sub) +"," + str(concl) + "," + '"' + inststring +'"' + ")")
+  
   return True
 
  def ExistsInt(self,up,termstring,newvarname,places):
@@ -318,6 +339,7 @@ class ProofEnvironment:
   proofelement.pos = len(self.proof) +1
   self.proof.append(proofelement)
   self.log.append("ExistsInt(" + str(up) + "," + '"' + termstring + '"'+ "," + '"' + newvarname + '"' + "," + PrintNumList(places) +")")
+  
   return True
 
 
@@ -327,6 +349,7 @@ class ProofEnvironment:
      proofelement.pos = len(self.proof) +1
      self.proof.append(proofelement)
      self.log.append("AbsI(" + str(up) + "," + '"' + formstring +'"'+")")
+     
      return True
         
  def AbsC(self,abs,neghyp):
@@ -340,6 +363,7 @@ class ProofEnvironment:
                 self.proof[neghyp].dischargedby.append(proofelement.pos)
                 self.proof.append(proofelement)
                 self.log.append("AbsC(" + str(abs) + "," + str(neghyp) + ")")
+                
                 return True
                    
 
@@ -355,6 +379,7 @@ class ProofEnvironment:
    proofelement.pos = len(self.proof) + 1
    self.proof.append(proofelement)
    self.log.append("Symmetry(" + str(up) + ")")
+   
    return True
 
  
@@ -364,6 +389,7 @@ class ProofEnvironment:
       proofelement.pos = len(self.proof) + 1
       self.proof.append(proofelement)
       self.log.append("Identity(" + '"' + termstring +'"' + ")")
+     
       return True
 
  def EqualitySub(self, up, eq , places):
@@ -378,15 +404,16 @@ class ProofEnvironment:
      proofelement.pos = len(self.proof) + 1
      self.proof.append(proofelement)
      self.log.append("EqualitySub(" + str(up) +"," + str(eq) + "," + PrintNumList(places) + ")")
+     
      return True
 
  def ShowProof(self):
   n = 0     
   for  p in self.proof:
    if p.qed:      
-    print(str(n)+". "+parser.PrettyPrintout(p.formula) +" "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]) + " Qed" )
+    print(str(n)+". "+parser.PrettyPrintout(p.formula) +"  "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]) + " Qed" )
    else:
-    print(str(n)+". "+parser.PrettyPrintout(p.formula) +" "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]))      
+    print(str(n)+". "+parser.PrettyPrintout(p.formula) +"  "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]))      
    n = n + 1
    
  def ShowLog(self):
@@ -396,9 +423,12 @@ class ProofEnvironment:
     n = n + 1      
            
  def ShowLast(self):
-   n = len(self.proof)
-   print(str(n)+". "+parser.PrettyPrintout(p.formula) +" "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]))         
-   
+   n = len(self.proof)-1
+   if self.proof[n].qed:
+    print(str(n)+". "+parser.PrettyPrintout(self.proof[n].formula) +" "+self.proof[n].name +" "+ ' '.join([str(y) for y in self.proof[n].dependencies]) + " Qed")         
+   else:
+    print(str(n)+". "+parser.PrettyPrintout(self.proof[n].formula) +" "+self.proof[n].name +" "+ ' '.join([str(y) for y in self.proof[n].dependencies]))
+    
  def ShowAxioms(self):
   n = 0     
   for  p in self.axioms:
@@ -429,6 +459,7 @@ class ProofEnvironment:
    proofelement.pos = len(self.proof) + 1
    self.proof.append(proofelement)
    self.log.append("DefSub(" + str(up) + "," + '"' +conceptname +'"' +  "," + PrintStrList(strargs) + "," + PrintNumList(positions) + ")")
+  
    return True
    
  def DefExp(self,up,conceptname,positions):
@@ -439,6 +470,7 @@ class ProofEnvironment:
    proofelement.pos = len(self.proof) + 1
    self.proof.append(proofelement)
    self.log.append("DefExp(" + str(up) + "," + '"' +conceptname + '"' + "," + PrintNumList(positions) +")")
+   
    return True
     
  def NewDef(self, predname,args,formstring):
@@ -447,6 +479,7 @@ class ProofEnvironment:
   form = astop.NegationExpand(Formula(formstring))  
   self.definitions[predname]={"formula":form, "arguments":args}
   self.log.append("NewDef(" + '"' +  predname+'"' + "," + PrintStrList(args) + "," + '"' + formstring+'"' + ")")
+  
   return True 
  
  def NewDefEq(self,equationstring):
@@ -460,6 +493,7 @@ class ProofEnvironment:
   
   self.definitionequations.append(astop.NegationExpand(Formula(equationstring)))            
   self.log.append("NewDefEq(" + '"' + equationstring + '"' + ")")
+  
   return True
  
  #Also DelDef, DelAx, DelTheorem, Del EqDef
@@ -471,6 +505,7 @@ class ProofEnvironment:
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
   self.log.append("PredSub(" + str(up) + "," + '"'+ predicatenmae +'"' +"," + PrintStrList(arguments) +"," + '"'+ formstring+'"' + "," + PrintNumList(positions) + ")")
+  
   return True 
  
  def AddVariables(self,varlist): 
@@ -515,6 +550,7 @@ class ProofEnvironment:
      proofelement = ProofElement("UniqueElim" , [up],[], [],exis)
      proofelement.pos = len(self.proof) + 1
      self.proof.append(proofelement)
+     
      return True
      
  def UniqueInt(self,up):
@@ -537,6 +573,7 @@ class ProofEnvironment:
                          proofelement = ProofElement("UniqueInt" , [up],[], [],form)
                          proofelement.pos = len(self.proof) + 1
                          self.proof.append(proofelement)
+                         
                          return True  
                   
  def ClassElim(self,up):
@@ -553,6 +590,7 @@ class ProofEnvironment:
             proofelement.pos = len(self.proof) + 1
             self.proof.append(proofelement)
             self.log.append("ClassElim(" + str(up) + ")")
+            
             return True
    
  def ClassInt(self,up,newvarname):
@@ -570,6 +608,7 @@ class ProofEnvironment:
              proofelement.pos = len(self.proof) + 1
              self.proof.append(proofelement)
              self.log.append("ClassInt(" + str(up) + "," + '"' +newvarname +'"' + ")")
+            
              return True            
    
         if form.right.name=="constructor": 
@@ -582,6 +621,7 @@ class ProofEnvironment:
              proofelement.pos = len(self.proof) + 1
              self.proof.append(proofelement)
              self.log.append("ClassInt(" + str(up) + "," + '"' + newvarname + '"' + ")")
+             
              return True            
         
  
@@ -597,6 +637,7 @@ class ProofEnvironment:
      proofelement.pos = len(self.proof) + 1
      self.proof.append(proofelement)
      self.log.append("PolySub(" + str(up) + "," + '"' + polyvarname + '"' + "," + '"' + formstring +'"'+ ")")
+     
      return True   
  
       
@@ -607,6 +648,7 @@ class ProofEnvironment:
   theorem = parser.Printout(data["proofenv"].proof[-1].formula)
   self.AddTheorem(theorem)
   f.close()
+  
   return True
  
  def ViewTheorem(self,name):
@@ -652,12 +694,45 @@ class ProofEnvironment:
    
  def Undo(self):
    n = len(Proof.proof)
-   Proof.proof.pop()
+   self.proof.pop()
    for p in Proof.proof:
      if n in p.dischargedby:  
       p.dischargedby.remove(n)
-   Proof.log.pop()       
+   self.log.pop()  
+       
    return True
+ 
+ def UsedTheorems(self):
+    for l in self.log:
+     if l[0:10]=="TheoremInt":
+      x = int(l[11:len(l)-1])
+      print(str(x) + ". " + parser.PrettyPrintout(self.theorems[x]))     
+    return True
+  
+  
+       
+def GenerateProof():
+  Proof.proof = [] 
+  aux = Proof.log
+  Proof.log = []        
+  for logelem in aux:
+   print(logelem)      
+   exec("Proof." + logelem)
+  last = len(Proof.proof)-1
+  Proof.Qed(last) 
+  ShowProof() 
+   
+            
+         
+      
+      
+      
+      
+      
+      
+      
+      
+                        
            
 def Formula(string):
    return parser.Formula(tokenizer.Tokenize(string))
@@ -694,57 +769,135 @@ def ShowLog():
 def GetHypDep(up):
  return Proof.GetHypDep(Proof.proof[up])      
 def Hyp(form):
- return Proof.Hyp(form)            
+ if Proof.Hyp(form):   
+ 
+  ShowProof()
+  return True
+          
 def NewAx(formstring):
-  return Proof.NewAx(formstring)      
+  if Proof.NewAx(formstring) :
+  
+     ShowAxioms()
+     return True    
+     
 def AxInt(axnum):
-    return Proof.AxInt(axnum) 
+    if Proof.AxInt(axnum): 
+    
+     ShowProof()
+     return True
+     
 def EquivExp(up):
-    return Proof.EquivExp(up)
+ if Proof.EquivExp(up):
+     ShowProof()
+     return True
+     
 def EquivConst(up):
-    return Proof.EquivConst(up)
+    if Proof.EquivConst(up):
+        ShowProof()
+        return True
+        
 def DefEqInt(axnum):
-      return Proof.DefEqInt(axnum) 
+      if Proof.DefEqInt(axnum) :
+          ShowProof()
+          return True
+          
 def AddTheorem(formstring):
-    return Proof.AddTheorem(formstring)     
+    if Proof.AddTheorem(formstring):
+        ShowTheorems()
+        return True
+             
 def TheoremInt(axnum):
-    return Proof.TheoremInt(axnum)         
+    if Proof.TheoremInt(axnum):
+     ShowProof()
+     return True
+              
 def Qed(up):
-     return Proof.Qed(up) 
+     if Proof.Qed(up):
+      ShowLast()
+      return True
+       
 def AndInt(left,right):
-    return Proof.AndInt(left,right)
+    if Proof.AndInt(left,right):
+     ShowProof()
+     return True
+     
 def AndElimL(up):
-    return Proof.AndElimL(up)
+    if Proof.AndElimL(up):
+     ShowProof()
+     return True
+     
 def AndElimR (up):
-    return Proof.AndElimR (up)
+    if Proof.AndElimR (up):
+     ShowProof()
+     return True
+     
 def ImpElim (left,right):
-    return Proof.ImpElim (left,right)
+    if Proof.ImpElim(left,right):
+     ShowProof()
+     return True
+     
 def ImpInt(up,dis):
-    return Proof.ImpInt(up,dis)
+    if Proof.ImpInt(up,dis):
+        ShowProof()
+        return True
+        
 def OrIntR(up,formstring):
-    return Proof.OrIntR(up,formstring)
+    if Proof.OrIntR(up,formstring):
+        ShowProof()
+        return True
+        
 def OrIntL(up,formstring):
-    return Proof.OrIntL(up,formstring)
+    if Proof.OrIntL(up,formstring):
+        ShowProof()
+        return True
+        
 def OrElim(up, left, c1, right, c2):
-    return Proof.OrElim(up, left, c1, right, c2)
+    if Proof.OrElim(up, left, c1, right, c2):
+        ShowProof()
+        return True
+        
 def ForallElim(up,termstring):
-    return Proof.ForallElim (up,termstring)
+    if Proof.ForallElim (up,termstring):
+        ShowProof()
+        return True
+        
 def ForallInt(up, variablestring, quantvarstring):
-    return Proof.ForallInt(up, variablestring, quantvarstring)
+    if Proof.ForallInt(up, variablestring, quantvarstring):
+        ShowProof()
+        return True
 def ExistsElim(exists, sub, concl, inststring):
-    return Proof.ExistsElim(exists, sub, concl, inststring)
+    if Proof.ExistsElim(exists, sub, concl, inststring):
+      ShowProof()
+      return True
 def ExistsInt(up,termstring,newvarname,places):
-    return Proof.ExistsInt(up,termstring,newvarname,places)
+    if Proof.ExistsInt(up,termstring,newvarname,places):
+     ShowProof()
+     return True
+     
 def AbsI(up,formstring):
-    return Proof.AbsI(up,formstring)
+    if Proof.AbsI(up,formstring):
+     ShowProof()
+     return True
+     
 def AbsC(abs,neghyp):
-    return Proof.AbsC(abs,neghyp) 
+    if Proof.AbsC(abs,neghyp):
+        ShowProof()
+        return True
 def Symmetry(up):
-    return Proof.Symmetry( up)
+    if Proof.Symmetry( up):
+        ShowProof()
+        return True
+        
 def Identity ( termstring):
-    return Proof.Identity ( termstring)  
+    if Proof.Identity ( termstring):
+        ShowProof()
+        return True
+        
 def EqualitySub(up, eq , places):
-    return Proof.EqualitySub(up, eq , places)
+    if Proof.EqualitySub(up, eq , places):
+        ShowProof()
+        return True
+        
 def ShowProof():
     return Proof.ShowProof()
 def ShowLast():
@@ -758,15 +911,29 @@ def ShowDefEquations():
 def ShowDefinitions():      
     return Proof.ShowDefinitions()
 def DefSub(up,conceptname,strargs,positions):
-    return Proof.DefSub(up,conceptname,strargs,positions)
+    if Proof.DefSub(up,conceptname,strargs,positions):
+        ShowProof()
+        return True
 def DefExp(up,conceptname,positions):
-    return Proof.DefExp(up,conceptname,positions)
+    if Proof.DefExp(up,conceptname,positions):
+      ShowProof()
+      return True
 def NewDef( predname,args,formstring):
-    return Proof.NewDef( predname,args,formstring)
+    if Proof.NewDef( predname,args,formstring):
+     ShowDefinitions()
+     return True
+     
+     
 def NewDefEq(equationstring):
-    return Proof.NewDefEq(equationstring)
+    if Proof.NewDefEq(equationstring):
+        ShowDefEquations()
+        return True
+        
 def PredSub(up,predicatename,arguments,formstring,positions):
-    return Proof.PredSub(up,predicatename,arguments,formstring,positions)
+    if Proof.PredSub(up,predicatename,arguments,formstring,positions):
+        ShowProof()
+        return True
+        
 def AddVariables(varlist): 
     return Proof.AddVariables(varlist)
 def AddConstants(varlist): 
@@ -780,30 +947,65 @@ def AddPredicate(predname,arity,prefix):
 def Save(name):    
     return Proof.Save(name)
 def ClassElim(up):
-    return Proof.ClassElim(up)
+    if Proof.ClassElim(up):
+        ShowProof()
+        return True
 def ClassInt(up,newvarname):
-    return Proof.ClassInt(up,newvarname)
+    if Proof.ClassInt(up,newvarname):
+        ShowProof()
+        return True
 def PolySub(up,polyvarname,formstring):
-    return Proof.PolySub(up,polyvarname,formstring)
+    if Proof.PolySub(up,polyvarname,formstring):
+        ShowProof()
+        return True
 def LoadTheorem(name):
     return Proof.LoadTheorem(name)
 def FreeSub(up,freevar,instance):
-    return Proof.FreeSub(up,freevar,instance) 
+    if Proof.FreeSub(up,freevar,instance):
+        ShowProof()
+        return True
+        
 def ViewTheorem(name):
     return Proof.ViewTheorem(name)       
 def Undo():
-    return Proof.Undo()      
+    if Proof.Undo():
+        ShowProof()
+        return True
+             
 def EquivJoin(left,right):
-    return Proof.EquivJoin(left,right)
+    if Proof.EquivJoin(left,right):
+        ShowProof()
+        return True
+        
 def EquivLeft(up):
-    return Proof.EquivLeft(up)
+    if Proof.EquivLeft(up):
+        ShowProof()
+        return True
+        
 def EquivRight(up):
-    return Proof.EquivRight(up)
+    if Proof.EquivRight(up):
+        ShowProof()
+        return True
+        
 def UniqueElim(up,newbound):    
-    return Proof.UniqueElim(up)
+    if Proof.UniqueElim(up):
+        ShowProof()
+        return True
+        
 def UniqueInt(up,newbound):    
-    return Proof.UniqueInt(up)   
+    if Proof.UniqueInt(up) :
+        ShowProof()
+        return True
+          
 def ViewTheory(name):     
     return Proof.ViewTheory(name)
+    
 def ExistsInst (up, newvar):  
-    return Proof.ExistsInst(up,newvar)  
+    if Proof.ExistsInst(up,newvar):
+        ShowProof()
+        return True  
+    
+def UsedTheorems():
+ Proof.UsedTheorems()
+ return True
+    
