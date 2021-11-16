@@ -170,6 +170,10 @@ class ProofEnvironment:
 
 
  def AndElimL(self,up):
+  if self.proof[up].formula.name!="constructor":
+    return None
+  if self.proof[up].formula.operator.name!="&":
+    return None 
   proofelement = ProofElement("AndElimL",[up],[],[], self.proof[up].formula.left)  
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
@@ -178,6 +182,10 @@ class ProofEnvironment:
   return True
 
  def AndElimR (self,up):
+  if self.proof[up].formula.name!="constructor":
+    return None
+  if self.proof[up].formula.operator.name!="&":
+    return None    
   proofelement = ProofElement("AndElimR",[up],[],[], self.proof[up].formula.right)
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
@@ -269,18 +277,21 @@ class ProofEnvironment:
 
  def ForallInt (self, up, variablestring, quantvarstring):
      if quantvarstring in parser.constants:
+        print("Cannot quantify over constant.")
         return None
      if not quantvarstring in parser.variables:
+         print("Undefined symbol.")
          return None
      variable = parser.Term(tokenizer.Tokenize(variablestring))
      quantvar = parser.Term(tokenizer.Tokenize(quantvarstring))
      check = astop.GetFreeVars(astop.Free(self.proof[up].formula,[]),"Term")
      if quantvar.name in check:
-       if quantvar.name != variablestring:    
+       if quantvar.name != variablestring:
+        print("Cannot rename bound variable to name of a free variable.")    
         return None
      for h in self.GetHypDep(self.proof[up]):
       if variable.name in [x for x in astop.GetFreeVars(astop.Free(self.proof[h].formula,[]),"Term")]:
-       return "Fail"            
+       print("Variable to be quantified occurs free in a depending hypothesis.")            
        return None
      form = copy.deepcopy(self.proof[up].formula) 
      aux1 = astop.Substitution(form, variable, quantvar)
@@ -454,7 +465,7 @@ class ProofEnvironment:
    strargs2 = copy.deepcopy(strargs)     
    args = [parser.Term(tokenizer.Tokenize(x)) for x in strargs2]     
    ast = copy.deepcopy(self.proof[up].formula)
-   defs = copy.deepcopy(self.definitions)
+   defs = self.definitions
    aux = astop.ConceptSub(ast,conceptname,args,positions,defs)
    proofelement = ProofElement("DefSub" , [up],[conceptname,args,positions], [],aux)
    proofelement.pos = len(self.proof) + 1
@@ -464,7 +475,7 @@ class ProofEnvironment:
    return True
    
  def DefExp(self,up,conceptname,positions):
-   ast = self.proof[up].formula
+   ast = copy.deepcopy(self.proof[up].formula)
    ast = astop.PredicatePosition(ast,conceptname,0)[0]
    aux = astop.ConceptExp(ast,conceptname,positions,self.definitions)
    proofelement = ProofElement("DefExp" , [up],[conceptname,positions], [],aux)
