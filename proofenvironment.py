@@ -451,8 +451,9 @@ class ProofEnvironment:
     print(parser.PrettyPrintout(ast))  
     
  def DefSub(self,up,conceptname,strargs,positions):
-   args = [parser.Term(tokenizer.Tokenize(x)) for x in strargs]     
-   ast = self.proof[up].formula
+   strargs2 = copy.deepcopy(strargs)     
+   args = [parser.Term(tokenizer.Tokenize(x)) for x in strargs2]     
+   ast = copy.deepcopy(self.proof[up].formula)
    defs = copy.deepcopy(self.definitions)
    aux = astop.ConceptSub(ast,conceptname,args,positions,defs)
    proofelement = ProofElement("DefSub" , [up],[conceptname,args,positions], [],aux)

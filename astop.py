@@ -264,6 +264,7 @@ def SubstitutionByPosition(ast,term1,term2,positions):
 
 
 def MultiSub(form,oldnamelist,newtermlist):
+ #must check for clashes    
  aux = form
  for k in range(0,len(oldnamelist)):  
   aux = Substitution(form,parser.Term(tokenizer.Tokenize(oldnamelist[k])) , newtermlist[k])
@@ -275,8 +276,8 @@ def ConceptExp(ast,conceptname,positions,definitions):
   if not type(ast).__name__=="Leaf":
    if ast.operator.name == conceptname and ast.operator.pos in positions:
     aux = ast.children
-    aux2 = definitions[conceptname]["formula"]
-    aux3 = definitions[conceptname]["arguments"]
+    aux2 = copy.deepcopy(definitions[conceptname]["formula"])
+    aux3 = copy.deepcopy(definitions[conceptname]["arguments"])
     return MultiSub(aux2, aux3, aux)
    else:
     oldchildren = ast.children
@@ -286,9 +287,12 @@ def ConceptExp(ast,conceptname,positions,definitions):
    return ast
 
 
-def PreConceptSub(ast, conceptname,args,definitions):   
-   aux = MultiSub(definitions[conceptname]["formula"], definitions[conceptname]["arguments"],args)
+def PreConceptSub(ast, conceptname,args,definitions):  
+   aux2 = copy.deepcopy(definitions[conceptname]["formula"]) 
+   aux3 = copy.deepcopy(definitions[conceptname]["arguments"])    
+   aux = MultiSub(aux2, aux3,args)
    ast = Position(ast,aux,0)[0]
+   
    return ast
    
 def PostConceptSub(ast,conceptname,args,positions,definitions):  
@@ -303,5 +307,6 @@ def PostConceptSub(ast,conceptname,args,positions,definitions):
      return ast
 
 def ConceptSub(ast,conceptname,args,positions,definitions):
+ 
  return PostConceptSub(PreConceptSub(ast,conceptname,args,definitions),conceptname,args,positions,definitions)    
      
