@@ -112,7 +112,7 @@ class ProofEnvironment:
  
 
  def EquivExp(self,up):
-        proofelement = ProofElement("EquivExp",[],[],[], astop.ExpandEquiv(self.proof[up].formula))
+        proofelement = ProofElement("EquivExp",[up],[],[], astop.ExpandEquiv(self.proof[up].formula))
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
         self.log.append("EquivExp(" + str(up) +")")
@@ -121,7 +121,7 @@ class ProofEnvironment:
   
 
  def EquivConst(self,up):
-        proofelement = ProofElement("EquivConst",[],[],[], astop.CreateEquiv(self.proof[up].formula))
+        proofelement = ProofElement("EquivConst",[up],[],[], astop.CreateEquiv(self.proof[up].formula))
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
         self.log.append("EquivConst(" + str(up) +")")
@@ -354,7 +354,7 @@ class ProofEnvironment:
 
  def AbsI(self,up,formstring):
     if parser.Printout(self.proof[up].formula) =="_|_":
-     proofelement = ProofElement("AbsI", [up],[formstring],[], Formula(formstring))
+     proofelement = ProofElement("AbsI", [up],[formstring],[], astop.NegationExpand(Formula(formstring)))
      proofelement.pos = len(self.proof) +1
      self.proof.append(proofelement)
      self.log.append("AbsI(" + str(up) + "," + '"' + formstring +'"'+")")
@@ -604,7 +604,7 @@ class ProofEnvironment:
             return True
    
  def ClassInt(self,up,newvarname):
-  form = self.proof[up].formula  
+  form = copy.deepcopy(self.proof[up].formula)  
   newvar = Term(newvarname)   
   if form.name =="constructor":
       if form.operator.name=="&":
@@ -1022,4 +1022,8 @@ def ExistsInst (up, newvar):
 def UsedTheorems():
  Proof.UsedTheorems()
  return True
+ 
+def Hypotheses(n):
+  if n < len(Proof.proof):
+    return set(Proof.GetHypDep(Proof.proof[n]))    
     
