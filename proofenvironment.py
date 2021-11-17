@@ -728,8 +728,9 @@ def GenerateProof():
   for logelem in aux:
    print(logelem)      
    exec("Proof." + logelem)
-  last = len(Proof.proof)-1
-  Proof.Qed(last) 
+  if len(Proof.proof)>0: 
+   last = len(Proof.proof)-1
+   Proof.Qed(last) 
   ShowProof() 
    
             
