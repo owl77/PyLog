@@ -170,10 +170,8 @@ class ProofEnvironment:
 
 
  def AndElimL(self,up):
-  if self.proof[up].formula.name!="constructor":
-    return None
-  if self.proof[up].formula.operator.name!="&":
-    return None 
+   
+     
   proofelement = ProofElement("AndElimL",[up],[],[], self.proof[up].formula.left)  
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
@@ -980,11 +978,12 @@ def FreeSub(up,freevar,instance):
         return True
         
 def ViewTheorem(name):
-    return Proof.ViewTheorem(name)       
+    return Proof.ViewTheorem(name) 
+          
 def Undo():
-    if Proof.Undo():
-        ShowProof()
-        return True
+    Proof.log.pop()
+    GenerateProof()
+    return True
              
 def EquivJoin(left,right):
     if Proof.EquivJoin(left,right):
