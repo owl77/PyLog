@@ -688,17 +688,17 @@ class ProofEnvironment:
  
  def EquivJoin(self,left,right):
    self.AndInt(left,right)
-   self.EquivConst(len(Proof.proof))
+   self.EquivConst(len(Proof.proof)-1)
    return True
    
  def EquivLeft(self,up):
    self.EquivExp(up)
-   self.AndElimL(len(Proof.proof))  
+   self.AndElimL(len(Proof.proof)-1)  
    return True
   
  def EquivRight(self,up):
    self.EquivExp(up)
-   self.AndElimR(len(Proof.proof))  
+   self.AndElimR(len(Proof.proof)-1)  
    return True 
    
    
