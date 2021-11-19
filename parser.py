@@ -256,9 +256,16 @@ def prePrettyPrintout(ast):
     return "{" + prePrettyPrintout(ast.children[0])  + "," + prePrettyPrintout(ast.children[1]) + "}"  
  if ast.operator.name=="orderedpair":
     return "(" + prePrettyPrintout(ast.children[0])  + "," + prePrettyPrintout(ast.children[1]) + ")"  
-    
-    
-             
+  
+  
+ if ast.operator.name=="Arr":
+    return "[" + prePrettyPrintout(ast.children[0])  + ": "+ prePrettyPrintout(ast.children[1])+" → "+ prePrettyPrintout(ast.children[2]) +"|"+prePrettyPrintout(ast.children[3])+"]"    
+ 
+ if ast.operator.name=="Obj":
+    return  prePrettyPrintout(ast.children[0]) + ":"+ prePrettyPrintout(ast.children[1]) 
+ if ast.operator.name=="app":
+    return  prePrettyPrintout(ast.children[0]) + prePrettyPrintout(ast.children[1])        
+   
  if ast.operator.name=="quine":
    return "[" + prePrettyPrintout(ast.children[0])  +  "]"   
  if ast.binary == True and ast.operator.prefix == False:
@@ -279,7 +286,7 @@ def prePrettyPrintout(ast):
  
 def PrettyPrintout(ast):
   aux = prePrettyPrintout(ast)
-  if aux[0]=="(":
+  if aux[0]=="(" and aux[len(aux)-1]==")":
    return aux[1:len(aux)-1]    
   else:
     return aux 

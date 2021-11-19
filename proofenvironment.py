@@ -97,7 +97,7 @@ class ProofEnvironment:
  def NewAx(self,formstring):
         form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring)))
         self.axioms.append(form)
-        self.log.append("NewAx(" + +'"' +formstring + '"' +")")
+   #     self.log.append("NewAx(" + '"' +formstring + '"' +")")
         
         return True
 
@@ -170,7 +170,10 @@ class ProofEnvironment:
 
 
  def AndElimL(self,up):
-   
+  if self.proof[up].formula.name!="constructor":
+     return None
+  if self.proof[up].formula.operator.name!="&":
+     return None
      
   proofelement = ProofElement("AndElimL",[up],[],[], self.proof[up].formula.left)  
   proofelement.pos = len(self.proof) + 1
@@ -488,7 +491,7 @@ class ProofEnvironment:
   self.AddVariables(args)    
   form = astop.NegationExpand(Formula(formstring))  
   self.definitions[predname]={"formula":form, "arguments":args}
-  self.log.append("NewDef(" + '"' +  predname+'"' + "," + PrintStrList(args) + "," + '"' + formstring+'"' + ")")
+  #self.log.append("NewDef(" + '"' +  predname+'"' + "," + PrintStrList(args) + "," + '"' + formstring+'"' + ")")
   
   return True 
  
@@ -502,7 +505,7 @@ class ProofEnvironment:
       return None
   
   self.definitionequations.append(astop.NegationExpand(Formula(equationstring)))            
-  self.log.append("NewDefEq(" + '"' + equationstring + '"' + ")")
+ # self.log.append("NewDefEq(" + '"' + equationstring + '"' + ")")
   
   return True
  
@@ -559,6 +562,7 @@ class ProofEnvironment:
      exis = Formula("exists " + myvar.name +"." + "(" + parser.Printout(bod) + " & " + "forall "+ newbound + ". (" + bod2  + " -> (" + newbound + " = " +myvar.name +") ) )")
      proofelement = ProofElement("UniqueElim" , [up],[], [],exis)
      proofelement.pos = len(self.proof) + 1
+     self.log.append("UniqueElim(" + str(up)+ "," + '"' + newbound + '"' + ")")
      self.proof.append(proofelement)
      
      return True
@@ -583,6 +587,7 @@ class ProofEnvironment:
                          proofelement = ProofElement("UniqueInt" , [up],[], [],form)
                          proofelement.pos = len(self.proof) + 1
                          self.proof.append(proofelement)
+                         self.log.append("UniqueInt(" + str(up)+")")
                          
                          return True  
                   
@@ -764,6 +769,7 @@ def Load(name):
  parser.predicatevariables = data["predicatevariables"]
  parser.pretty = data["pretty"]
  f.close()
+ ShowProof()
  return True
 
 print("")
@@ -1002,11 +1008,11 @@ def EquivRight(up):
         return True
         
 def UniqueElim(up,newbound):    
-    if Proof.UniqueElim(up):
+    if Proof.UniqueElim(up,newbound):
         ShowProof()
         return True
         
-def UniqueInt(up,newbound):    
+def UniqueInt(up):    
     if Proof.UniqueInt(up) :
         ShowProof()
         return True
@@ -1027,3 +1033,17 @@ def Hypotheses(n):
   if n < len(Proof.proof):
     return set(Proof.GetHypDep(Proof.proof[n]))    
     
+def preMultiFreeSub(up,sourcelist,targetlist):
+  global Proof    
+  if len(sourcelist)!=len(targetlist):
+    return None
+  if len(sourcelist) ==1:
+    return Proof.FreeSub(up,sourcelist[0],targetlist[0])    
+  
+  Proof.FreeSub(up, sourcelist[0],targetlist[0])
+  return preMultiFreeSub(up+1, sourcelist[1:], targetlist[1:])           
+
+def MultiFreeSub(up,sourcelist,targetlist):
+  if preMultiFreeSub(up,sourcelist,targetlist):
+       ShowProof()
+       return True 
