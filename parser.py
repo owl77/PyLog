@@ -263,7 +263,7 @@ def prePrettyPrintout(ast):
  
  if ast.operator.name=="Obj":
     return  prePrettyPrintout(ast.children[0]) + ":"+ prePrettyPrintout(ast.children[1]) 
- if ast.operator.name=="app":
+ if ast.operator.name=="App":
     return  prePrettyPrintout(ast.children[0]) + prePrettyPrintout(ast.children[1])        
    
  if ast.operator.name=="quine":
