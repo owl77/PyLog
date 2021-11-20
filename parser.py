@@ -261,9 +261,9 @@ def prePrettyPrintout(ast):
  if ast.operator.name=="Arr":
     return "[" + prePrettyPrintout(ast.children[0])  + ": "+ prePrettyPrintout(ast.children[1])+" → "+ prePrettyPrintout(ast.children[2]) +"|"+prePrettyPrintout(ast.children[3])+"]"    
  
- if ast.operator.name=="Obj":
+ if ast.operator.name=="Obj" or ast.operator.name=="TypeOf":
     return  prePrettyPrintout(ast.children[0]) + ":"+ prePrettyPrintout(ast.children[1]) 
- if ast.operator.name=="App":
+ if ast.operator.name=="App" or ast.operator.name =="typeapp":
     return  prePrettyPrintout(ast.children[0]) + prePrettyPrintout(ast.children[1])        
    
  if ast.operator.name=="quine":

@@ -257,7 +257,7 @@ class ProofEnvironment:
  def ForallElim (self, up,termstring):
    if self.proof[up].formula.operator.name=="forall":
     form = copy.deepcopy(self.proof[up].formula)   
-    term = parser.Term(tokenizer.Tokenize(termstring))
+    term = astop.NegationExpand(parser.Term(tokenizer.Tokenize(termstring)))
     proofelement = ProofElement("ForallElim", [up],[term],[], astop.Substitution( astop.Free(form.children[0],[]) , form.operator.variable, term) )
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
@@ -312,8 +312,8 @@ class ProofEnvironment:
   if not self.proof[exists].formula.operator.name=="exists":
    return None
   inst = Term(inststring) 
-  body = copy.deepcopy(self.proof[exists].formula.children[0])
-  var = copy.deepcopy(self.proof[exists].formula.operator.variable)
+  body = astop.Free(copy.deepcopy(self.proof[exists].formula.children[0]),[])
+  var = astop.Free(copy.deepcopy(self.proof[exists].formula.operator.variable),[])
   if not astop.Equals(astop.Substitution(body,var,inst),self.proof[sub].formula):
    return None
   dep = [x for x in self.GetHypDep(self.proof[concl]) if x!= sub]
@@ -405,9 +405,9 @@ class ProofEnvironment:
       return True
 
  def EqualitySub(self, up, eq , places):
-     form = copy.deepcopy(self.proof[up].formula)
+     form = astop.Free(copy.deepcopy(self.proof[up].formula),[])
      equa = copy.deepcopy(self.proof[eq].formula)
-     aux1= equa.left
+     aux1= astop.Free((equa.left),[])
      aux2 = equa.right
      aux3 = astop.Position(form,aux1,0)
      aux = aux3[0]
@@ -512,12 +512,18 @@ class ProofEnvironment:
  #Also DelDef, DelAx, DelTheorem, Del EqDef
 
  def PredSub(self,up,predicatename,arguments,formstring,positions):
-  auxdef = { "arguments":arguments, "formula":Formula(formstring)}
-  aux = astop.ConceptExp(copy.deepcopy(self.proof[up].formula),predicatename,positions,auxdef)
+  if predicatename in self.definitions.keys():
+    print("Predicate is defined.")
+    return None
+  ast = copy.deepcopy(self.proof[up].formula)
+  ast = astop.PredicatePosition(ast,predicatename,0)[0]
+  auxdef={}    
+  auxdef[predicatename] ={ "arguments":arguments, "formula":astop.NegationExpand(Formula(formstring))}
+  aux = astop.ConceptExp(ast,predicatename,positions,auxdef)
   proofelement = ProofElement("PredSub" , [up],[predicatename,arguments,formstring,positions], [],aux)
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
-  self.log.append("PredSub(" + str(up) + "," + '"'+ predicatenmae +'"' +"," + PrintStrList(arguments) +"," + '"'+ formstring+'"' + "," + PrintNumList(positions) + ")")
+  self.log.append("PredSub(" + str(up) + "," + '"'+ predicatename +'"' +"," + PrintStrList(arguments) +"," + '"'+ formstring+'"' + "," + PrintNumList(positions) + ")")
   
   return True 
  
@@ -556,8 +562,8 @@ class ProofEnvironment:
   aux = copy.deepcopy(self.proof[up].formula)
   if aux.name =="constructor":
     if aux.operator.name=="unique":
-     myvar = aux.operator.variable
-     bod = aux.children[0]
+     myvar = astop.Free(aux.operator.variable,[])
+     bod = astop.Free(aux.children[0],[])
      bod2 = parser.Printout(astop.Substitution(copy.deepcopy(bod), myvar, Term(newbound)))
      exis = Formula("exists " + myvar.name +"." + "(" + parser.Printout(bod) + " & " + "forall "+ newbound + ". (" + bod2  + " -> (" + newbound + " = " +myvar.name +") ) )")
      proofelement = ProofElement("UniqueElim" , [up],[], [],exis)
@@ -595,11 +601,11 @@ class ProofEnvironment:
   if self.proof[up].formula.name=="constructor":
     if self.proof[up].formula.operator.name=="Elem":    
       if type(self.proof[up].formula.left).__name__=="Leaf":
-        myvar = copy.deepcopy(self.proof[up].formula.left)  
+        myvar = astop.Free(copy.deepcopy(self.proof[up].formula.left) ,[]) 
         if self.proof[up].formula.right.name == "constructor":
          if self.proof[up].formula.right.operator.name =="extension":
-            body = copy.deepcopy(self.proof[up].formula.right.children[0])
-            boundvar = copy.deepcopy(self.proof[up].formula.right.operator.variable)           
+            body = astop.Free(copy.deepcopy(self.proof[up].formula.right.children[0]),[])
+            boundvar = astop.Free(copy.deepcopy(self.proof[up].formula.right.operator.variable),[])           
             aux = Formula("( Set(" + parser.Printout(myvar) +") & "+ parser.Printout(astop.Substitution(body,boundvar,myvar)) + ")" )     
             proofelement = ProofElement("ClassElim" , [up],[], [],aux)
             proofelement.pos = len(self.proof) + 1
@@ -1047,3 +1053,16 @@ def MultiFreeSub(up,sourcelist,targetlist):
   if preMultiFreeSub(up,sourcelist,targetlist):
        ShowProof()
        return True 
+       
+def PredSub(up,predicatename,arguments,formstring,positions):
+    if Proof.PredSub(up,predicatename,arguments,formstring,positions): 
+        ShowProof()
+        return True      
+        
+        
+def CheckTheory(namelist):
+  for x in namelist:
+     Load(x)
+     GenerateProof()
+         
+            

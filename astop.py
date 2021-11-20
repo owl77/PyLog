@@ -148,8 +148,21 @@ def Equals(ast1,ast2):
   return parser.Printout(aux1) == parser.Printout(aux2)
 
 
+def FreeEquiv(ast1,ast2):
+ if type(ast1).__name__=="Leaf":
+  if ast1.free!=ast2.free:
+    return False 
+ else:
+   for x in range(0,len(ast1.children)):
+     if FreeEquiv(ast1.children[x],ast2.children[x])!=True:
+      return False
+  
+ return True
+    
+
+
 def Position(ast,exp,n):
- if Equals(ast,exp):
+ if Equals(ast,exp) and FreeEquiv(ast,exp):
   if type(ast).__name__=="Leaf":    
    ast.pos = n
   else:
@@ -165,6 +178,9 @@ def Position(ast,exp,n):
 
 
 def BasicSubstitution(ast,old,fresh):
+ if type(ast).__name__=="Leaf":
+    if ast.free!=True:
+      return ast    
  if Equals(ast,old):     
    return fresh
  if type(ast).__name__=="Leaf":
@@ -178,6 +194,7 @@ def BasicSubstitution(ast,old,fresh):
   return ast
 
 def BasicSubstitutionByPosition(ast,old,fresh,positions):
+    
  if Equals(ast,old):
    if ast.name=="constructor" and ast.operator.pos in positions:     
     return fresh
@@ -243,12 +260,18 @@ def GetBindVars(ast):
 
 def Substitution(ast,var,term):
   free = GetFreeVars(term,"Term")
+  
   bind = GetBindVars(ast)
+  
   subs = [x for x in bind if x in free]
+  
   for y in subs:
    y2 = tokenizer.Fresh(parser.variables,tokenizer.alphabet)
+   
    ast = BoundVariableChange(ast,y, y2)
+   
    parser.variables.append(y2)
+   
   return BasicSubstitution(ast,var,term)
 
 def SubstitutionByPosition(ast,term1,term2,positions):
