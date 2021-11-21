@@ -406,8 +406,8 @@ class ProofEnvironment:
 
  def EqualitySub(self, up, eq , places):
      form = astop.Free(copy.deepcopy(self.proof[up].formula),[])
-     equa = copy.deepcopy(self.proof[eq].formula)
-     aux1= astop.Free((equa.left),[])
+     equa = astop.Free(copy.deepcopy(self.proof[eq].formula),[])
+     aux1= equa.left
      aux2 = equa.right
      aux3 = astop.Position(form,aux1,0)
      aux = aux3[0]
@@ -737,7 +737,7 @@ def GenerateProof():
   aux = Proof.log
   Proof.log = []        
   for logelem in aux:
-   print(logelem)      
+         
    exec("Proof." + logelem)
   if len(Proof.proof)>0: 
    last = len(Proof.proof)-1
@@ -775,7 +775,7 @@ def Load(name):
  parser.predicatevariables = data["predicatevariables"]
  parser.pretty = data["pretty"]
  f.close()
- ShowProof()
+ 
  return True
 
 print("")
@@ -1062,6 +1062,9 @@ def PredSub(up,predicatename,arguments,formstring,positions):
         
 def CheckTheory(namelist):
   for x in namelist:
+     print("")
+     print(x)
+     print("") 
      Load(x)
      GenerateProof()
          

@@ -162,7 +162,10 @@ def FreeEquiv(ast1,ast2):
 
 
 def Position(ast,exp,n):
+ 
+ 
  if Equals(ast,exp) and FreeEquiv(ast,exp):
+       
   if type(ast).__name__=="Leaf":    
    ast.pos = n
   else:
@@ -172,7 +175,8 @@ def Position(ast,exp,n):
   if type(ast).__name__=="Leaf":
    return [ast, n]
   else:
-   aux = Passing(ast.children, lambda x,y: Position(x,exp,y), n)
+   kinder = copy.deepcopy(ast.children)      
+   aux = Passing(kinder, lambda x,y: Position(x,exp,y), n)
    ast.children = aux[0]
    return [ast,aux[1]]
 
