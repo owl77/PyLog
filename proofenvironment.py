@@ -121,6 +121,7 @@ class ProofEnvironment:
   
 
  def EquivConst(self,up):
+      if astop.CreateEquiv(self.proof[up].formula)!=None:
         proofelement = ProofElement("EquivConst",[up],[],[], astop.CreateEquiv(self.proof[up].formula))
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
@@ -160,8 +161,12 @@ class ProofEnvironment:
       return False
 
  def AndInt(self,left,right):
-  form = parser.Formula(tokenizer.Tokenize("("+parser.Printout(self.proof[left].formula)  + "&"+ parser.Printout(self.proof[right].formula)  + ")"))
-  proofelement = ProofElement("AndInt",[left,right],[],[], form)
+  andop = parser.Leaf("&","Formula")
+  andop.prefix = False
+  andint = parser.Constructor(andop,"Formula", [self.proof[left].formula, self.proof[right].formula])       
+     
+#  form = parser.Formula(tokenizer.Tokenize("("+parser.Printout(self.proof[left].formula)  + "&"+ parser.Printout(self.proof[right].formula)  + ")"))
+  proofelement = ProofElement("AndInt",[left,right],[],[], andint)
   proofelement.pos = len(self.proof) + 1
   self.proof.append(proofelement)
   self.log.append("AndInt(" +str(left) +","+str(right) + ")")
@@ -666,8 +671,8 @@ class ProofEnvironment:
   global Proof    
   f = open(name,'rb')
   data = pickle.load(f)
-  theorem = parser.Printout(data["proofenv"].proof[-1].formula)
-  self.AddTheorem(theorem)
+  theorem = data["proofenv"].proof[-1].formula
+  self.theorems.append(theorem)
   f.close()
   
   return True
@@ -699,7 +704,7 @@ class ProofEnvironment:
  
  def EquivJoin(self,left,right):
    self.AndInt(left,right)
-   self.EquivConst(len(Proof.proof)-1)
+   self.EquivConst(len(self.proof)-1)
    return True
    
  def EquivLeft(self,up):
@@ -1061,11 +1066,18 @@ def PredSub(up,predicatename,arguments,formstring,positions):
         
         
 def CheckTheory(namelist):
+  global Proof    
   for x in namelist:
      print("")
-     print(x)
-     print("") 
      Load(x)
+     th = parser.PrettyPrintout(Proof.proof[len(Proof.proof)-1].formula)
+     print(x + ". " + th)
+     print("")
      GenerateProof()
+     print("")
+     print("Used Theorems")
+     print("")
+     UsedTheorems()
+     
          
             

@@ -92,15 +92,18 @@ def ExpandEquiv(ast):
 def CreateEquiv(ast):
    if type(ast).__name__=="Leaf":
     return None    
-   if type(ast).__name__=="Constructor" and ast.operator.name == "&":  
+   if type(ast).__name__=="Constructor" and ast.operator.name == "&":
+    
     leftimp = ast.children[0]
     rightimp = ast.children[1]
     if type(leftimp).__name__=="Constructor" and leftimp.operator.name == "->"  and  type(rightimp).__name__=="Constructor" and rightimp.operator.name == "->":
+         
       left1 = leftimp.children[0]
       left2 = leftimp.children[1]
       right1 = rightimp.children[0]
       right2 = rightimp.children[1]
       if Equals(left1,right2) and Equals(left2,right1):
+        
         return parser.Formula(tokenizer.Tokenize("(" + parser.Printout(left1)  + " equiv " +  parser.Printout(right1) +")" ))  
       
        
