@@ -318,7 +318,8 @@ def PreConceptSub(ast, conceptname,args,definitions):
    aux2 = copy.deepcopy(definitions[conceptname]["formula"]) 
    aux3 = copy.deepcopy(definitions[conceptname]["arguments"])    
    aux = MultiSub(aux2, aux3,args)
-   ast = Position(ast,aux,0)[0]
+  
+   ast = Position(Free(ast,[]),Free(aux,[]),0)[0]
    
    return ast
    
@@ -329,7 +330,7 @@ def PostConceptSub(ast,conceptname,args,positions,definitions):
      aux2 = [parser.Printout(a) for a in args]    
      return parser.Formula(tokenizer.Tokenize(conceptname+"(" +','.join(aux2)+ ")" ))   
    else:
-     oldchildren = ast.children
+     oldchildren = copy.deepcopy(ast.children)
      ast.children=[PostConceptSub( x , conceptname , args, positions,definitions) for x in oldchildren]
      return ast
 
