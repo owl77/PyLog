@@ -402,6 +402,8 @@ class ProofEnvironment:
  
  def Identity (self, termstring):
       aux = parser.Formula(tokenizer.Tokenize("("+termstring +" = " + termstring + ")") )
+      if aux==None:
+        return None
       proofelement= ProofElement("Identity", [],[termstring], [],aux)
       proofelement.pos = len(self.proof) + 1
       self.proof.append(proofelement)
@@ -605,7 +607,7 @@ class ProofEnvironment:
  def ClassElim(self,up):
   if self.proof[up].formula.name=="constructor":
     if self.proof[up].formula.operator.name=="Elem":    
-      if type(self.proof[up].formula.left).__name__=="Leaf":
+      #if type(self.proof[up].formula.left).__name__=="Leaf":
         myvar = astop.Free(copy.deepcopy(self.proof[up].formula.left) ,[]) 
         if self.proof[up].formula.right.name == "constructor":
          if self.proof[up].formula.right.operator.name =="extension":
@@ -719,6 +721,7 @@ class ProofEnvironment:
    
    
  def Undo(self):
+        
    n = len(Proof.proof)
    self.proof.pop()
    for p in Proof.proof:
@@ -738,6 +741,9 @@ class ProofEnvironment:
   
        
 def GenerateProof():
+  for v in parser.variables:
+   if '_' in v:
+    parser.variables.remove(v)    
   Proof.proof = [] 
   aux = Proof.log
   Proof.log = []        
@@ -1000,6 +1006,9 @@ def ViewTheorem(name):
           
 def Undo():
     Proof.log.pop()
+    for v in parser.variables:
+     if '_' in v:
+      parser.variables.remove(v)
     GenerateProof()
     return True
              
