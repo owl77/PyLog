@@ -57,7 +57,7 @@ class ProofEnvironment:
  def GetTree(self,proofelement):
        out = [proofelement.pos-1]
        for dep in proofelement.dependencies:
-         out = out + self.GetTree(self.proof[dep])
+         out = list(set(out + self.GetTree(self.proof[dep])))
        return out
 
  def GetHyp(self,proofelement):
@@ -65,7 +65,7 @@ class ProofEnvironment:
           return [proofelement.pos-1]
          out = []
          for dep in proofelement.dependencies:
-          out = out + self.GetHyp(self.proof[dep])
+          out = list(set(out + self.GetHyp(self.proof[dep])))
          return out
 
  def CheckDischargedBy(self, hyp, proofelem):
@@ -216,7 +216,7 @@ class ProofEnvironment:
     proofelement = ProofElement("ImpInt",[up],[],[], parser.Formula(tokenizer.Tokenize("("+parser.Printout(self.proof[dis].formula)+ "->"+
     parser.Printout(self.proof[up].formula)+ ")" )))
     proofelement.pos = len(self.proof) + 1
-    self.proof[dis].dischargedby.append(proofelement.pos-1)
+    self.proof[dis].dischargedby.append(proofelement.pos)
     self.proof.append(proofelement)
     self.log.append("ImpInt(" +str(up) +","+str(dis) + ")")
     
@@ -1051,7 +1051,7 @@ def UsedTheorems():
  
 def Hypotheses(n):
   if n < len(Proof.proof):
-    return set(Proof.GetHypDep(Proof.proof[n]))    
+    return set(Proof.GetHypDep(copy.deepcopy(Proof.proof[n])))    
     
 def preMultiFreeSub(up,sourcelist,targetlist):
   global Proof    
