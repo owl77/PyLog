@@ -315,23 +315,28 @@ class ProofEnvironment:
 
  def ExistsElim(self,exists, sub, concl, inststring):
   if not self.proof[exists].formula.operator.name=="exists":
+        
    return None
   inst = Term(inststring) 
   body = astop.Free(copy.deepcopy(self.proof[exists].formula.children[0]),[])
   var = astop.Free(copy.deepcopy(self.proof[exists].formula.operator.variable),[])
   if not astop.Equals(astop.Substitution(body,var,inst),self.proof[sub].formula):
+        
    return None
   dep = [x for x in self.GetHypDep(self.proof[concl]) if x!= sub]
   for h in dep:
    aux = astop.GetFreeVars(astop.Free(self.proof[h].formula,[]),"Term")
    n = inst.name
    if n in aux:
+      
     return None
   aux2 = astop.GetFreeVars(astop.Free(self.proof[exists].formula,[]),"Term"),
   if inst.name in aux2:
+     
      return None
-  aux3 = astop.GetFreeVars(self.proof[concl].formula,"Term")
+  aux3 = astop.GetFreeVars(astop.Free(copy.deepcopy(self.proof[concl].formula),[]),"Term")
   if inst.name in aux3:
+     
      return None         
   proofelement = ProofElement("ExistsElim", [exists,sub,concl],[inst],[], self.proof[concl].formula)
   proofelement.pos = len(self.proof) +1
