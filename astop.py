@@ -81,11 +81,24 @@ def NegationExpand(ast):
  
 def ExpandEquiv(ast):
  if type(ast).__name__=="Leaf":
-  return ast    
+  return ast  
+    
  if type(ast).__name__=="Constructor" and ast.operator.name == "equiv":
-   scope1 = parser.Printout(ast.children[0])
-   scope2 = parser.Printout(ast.children[1])
-   return parser.Formula(tokenizer.Tokenize("((" + scope1 +" -> "+ scope2 +") &  (" +scope2 + " -> "  + scope1 + "))"))
+   aux1 = copy.deepcopy(ast)
+   aux2 = copy.deepcopy(ast)
+   auxleft = aux1.left
+   auxright = aux1.right
+   aux1.operator.name = "->"
+   aux2.operator.name = "->"
+   aux2.children[0] = auxright
+   aux2.children[1] = auxleft
+   aux2.left = auxright
+   aux2.right = auxleft
+   op = parser.Leaf("&","Formula")
+   op.prefix = False
+   return parser.Constructor(op,"Formula", [aux1, aux2])
+   
+   
  else:
    return ast     
 
@@ -103,6 +116,9 @@ def CreateEquiv(ast):
       right1 = rightimp.children[0]
       right2 = rightimp.children[1]
       if Equals(left1,right2) and Equals(left2,right1):
+       #   op = parser.Leaf("equiv","Formula")
+        #  op.prefix = False
+         # return parser.Constructor(op,"Formula", [left1, left2]) 
         
         return parser.Formula(tokenizer.Tokenize("(" + parser.Printout(left1)  + " equiv " +  parser.Printout(right1) +")" ))  
       

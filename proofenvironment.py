@@ -72,7 +72,7 @@ class ProofEnvironment:
        if len(self.proof[hyp].dischargedby) ==0:
          return False
        for h in self.proof[hyp].dischargedby:
-         if h in self.GetTree(self.proof[proofelem]):
+         if h-1 in self.GetTree(self.proof[proofelem]):
           return True
        return False
 
@@ -1093,5 +1093,15 @@ def CheckTheory(namelist):
      print("")
      UsedTheorems()
      
+     
+def Translate(proof,n):
+ proof[0].pos = proof[0].pos + n    
+ for proofelem in proof:
+  for x in range(0,len(proofelem.dependencies)):
+      proofelem.dependencies[x] = proofelem.dependencies[x] + n
+ return proof
+ 
+        
+                       
          
             
