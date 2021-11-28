@@ -54,11 +54,23 @@ class ProofEnvironment:
          return False
        return True
 
+ 
+
+ 
+
+
+
+
  def GetTree(self,proofelement):
        out = [proofelement.pos-1]
        for dep in proofelement.dependencies:
          out = list(set(out + self.GetTree(self.proof[dep])))
        return out
+
+
+
+
+
 
  def GetHyp(self,proofelement):
          if proofelement.name =="Hyp":
@@ -76,13 +88,33 @@ class ProofEnvironment:
           return True
        return False
 
+ #def GetHypDep(self,proofelement):
+  #     aux = []
+   #    for  h in self.GetHyp(proofelement):
+    #    if len(Intersect([x-1 for x in self.proof[h].dischargedby], self.GetTree(proofelement))) == 0:
+     #    aux.append(h)
+      # return aux 
+ 
  def GetHypDep(self,proofelement):
-       aux = []
-       for  h in self.GetHyp(proofelement):
-        if len(Intersect([x-1 for x in self.proof[h].dischargedby], self.GetTree(proofelement))) == 0:
-         aux.append(h)
-       return aux 
-
+     if proofelement.name =="Hyp":      
+       return [proofelement.pos-1]
+     aux = []
+     for h in proofelement.dependencies:
+        aux = aux + self.GetHypDep(self.proof[h]) 
+     aux = list(set(aux))
+     p = proofelement.pos
+     aux2 = []
+     for x in aux:
+      if not p in self.proof[x].dischargedby:
+        aux2.append(x)  
+        
+     return list(set(aux2))       
+          
+     
+ 
+ 
+ 
+  
 
  def Hyp(self,formstring):
         form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring)))
@@ -212,15 +244,15 @@ class ProofEnvironment:
  def ImpInt(self,up,dis):
   if not self.proof[dis].name=="Hyp":
    return None
-  if not self.CheckDischargedBy(dis,up)==True:
-    proofelement = ProofElement("ImpInt",[up],[],[], parser.Formula(tokenizer.Tokenize("("+parser.Printout(self.proof[dis].formula)+ "->"+
-    parser.Printout(self.proof[up].formula)+ ")" )))
-    proofelement.pos = len(self.proof) + 1
-    self.proof[dis].dischargedby.append(proofelement.pos)
-    self.proof.append(proofelement)
-    self.log.append("ImpInt(" +str(up) +","+str(dis) + ")")
+ # if not self.CheckDischargedBy(dis,up)==True:
+  proofelement = ProofElement("ImpInt",[up],[],[], parser.Formula(tokenizer.Tokenize("("+parser.Printout(self.proof[dis].formula)+ "->"+
+  parser.Printout(self.proof[up].formula)+ ")" ))) 
+  proofelement.pos = len(self.proof) + 1
+  self.proof[dis].dischargedby.append(proofelement.pos) 
+  self.proof.append(proofelement)
+  self.log.append("ImpInt(" +str(up) +","+str(dis) + ")")
     
-    return True
+  return True
 
  def OrIntR(self, up,formstring):
     aux = astop.NegationExpand(Formula("(" + parser.Printout(self.proof[up].formula)+ " v " + formstring +")"  ))
@@ -628,7 +660,7 @@ class ProofEnvironment:
    
  def ClassInt(self,up,newvarname):
   form = copy.deepcopy(self.proof[up].formula)  
-  newvar = Term(newvarname)   
+  newvar = astop.Free(Term(newvarname),[])   
   if form.name =="constructor":
       if form.operator.name=="&":
         if form.left.name=="constructor": 
@@ -754,7 +786,9 @@ def GenerateProof():
   Proof.log = []        
   for logelem in aux:
          
-   exec("Proof." + logelem)
+  
+     exec("Proof." + logelem)
+  
   if len(Proof.proof)>0: 
    last = len(Proof.proof)-1
    Proof.Qed(last) 
@@ -1093,22 +1127,82 @@ def CheckTheory(namelist):
      print("")
      UsedTheorems()
      
+
+
+def ParseLog():
+ aux = []    
+ global Proof
+ for l in Proof.log:
+  for c in range(0,len(l)):
+    if l[c]=="(":
+     aux.append( [l[0:c]] + l[c+1:len(l)-1].split(',') )
+     break
+ return aux     
      
-def Translate(proof,n):
- proof[0].pos = proof[0].pos + n    
- for proofelem in proof:
-  for x in range(0,len(proofelem.dependencies)):
-      proofelem.dependencies[x] = proofelem.dependencies[x] + n
- return proof
+def LogToString(log):
+ aux = []
+ for l in log:
+  aux.append( l[0] + "(" + (',').join( l[1:]) +")")
+ return aux          
+     
+def ProofEdit(init,offset):
+ global Proof    
+ aux = []    
+ for l in Proof.log:
+  if l[0] in ["AbsI", "ExistsInt", "DefSub", "DefExp","ExistsInst", "ForallInt","ForallElim", "ClassElim", "AndElimL","AndElimR", "ClassInt","EquivExp", "Symmetry","PolySub","OrIntL","OrIntR","EquivConst"]:
+    if int(l[1])>init-1:
+      l[1] = str(int(l[1]) + offset)
+    aux.append(l)
+    continue
+  if l[0] in ["ImpElim", "ImpInt", "AndInt" , "EqualitySub"]:
+     if int(l[1])>init-1:
+       l[1] = str(int(l[1]) + offset)
+     if int(l[2])>init-1:
+       l[2] = str(int(l[2]) + offset)           
+     aux.append(l)       
+     continue
+  if l[0] in ["ExistsElim", "AbsC"]:
+     if int(l[1])>init-1:
+       l[1] = str(int(l[1]) + offset)
+     if int(l[2])>init-1:
+       l[2] = str(int(l[2]) + offset)
+     if int(l[3])>init-1:
+       l[3] = str(int(l[3]) + offset)  
+     aux.append(l)       
+     continue
+  
+       
+  if l[0] =="OrElim":
+     if int(l[1])>init-1:
+       l[1] = str(int(l[1]) + offset)
+     if int(l[2])>init-1:
+       l[2] = str(int(l[2]) + offset) 
+     if int(l[3])>init-1:
+        l[3] = str(int(l[3]) + offset)
+     if int(l[4])>init-1:
+        l[4] = str(int(l[4]) + offset)                  
+     if int(l[5])>init-1:
+         l[5] = str(int(l[5]) + offset)
+     aux.append(l)
+     continue
+  aux.append(l)      
+  
+ pad = []
+ for n in range(0,offset):
+  pad.append(['Identity','"x"' ])     
+ aux1 = aux[:init] + pad + aux[init:] 
+ Proof.log = LogToString(aux1)
+ ShowLog()
+ return True
  
 def Test():
  CheckTheory(["Th4","Th5","Th6","Th7","Th8",
- "Th11","Th12","Th14","Th16","Th17","Th19","Th20",
- "Th21","Th24","Th26","Th27","Th28","Th29","Th30",
+ "Th11","Th12", "Th14","Th16","Th17","Th19","Th20","Th21", 
+ "Th24","Th26","Th27","Th28","Th29","Th30",
  "Th31","Th32","Th33", "Th34","Th35", "Th37","Th38",
- "Th39","Th41", "Th42","Th43","Th44","Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62", "Th64", "Th67", "Th69", "Th70", "Th71", "Th73"])
+ "Th39","Th41", "Th42","Th43","Th44" ,   "Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62",  "Th64", "Th67", "Th69", "Th70", "Th71" , "Th73" , "Th74"])
  
-        
+   
                        
          
             
