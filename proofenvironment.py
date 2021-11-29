@@ -5,6 +5,7 @@ import pickle
 import copy
 import os
 import inspect
+import time
 
 def Intersect(list1,list2):
  return [x for x in list1 if x in list2]
@@ -117,6 +118,9 @@ class ProofEnvironment:
   
 
  def Hyp(self,formstring):
+        if parser.Formula(tokenizer.Tokenize(formstring))== None:
+         print("Syntax Error.")
+         return
         form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring)))
         proofelement = ProofElement("Hyp",[],[],[], form)
         proofelement.pos = len(self.proof) + 1
@@ -127,6 +131,9 @@ class ProofEnvironment:
         
 
  def NewAx(self,formstring):
+        if parser.Formula(tokenizer.Tokenize(formstring))== None:
+         print("Syntax Error.")
+         return
         form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring)))
         self.axioms.append(form)
    #     self.log.append("NewAx(" + '"' +formstring + '"' +")")
@@ -135,6 +142,9 @@ class ProofEnvironment:
 
 
  def AxInt(self,axnum):
+        if axnum > len(self.axioms)-1:
+          print("Range exceeded.")
+          return
         proofelement = ProofElement("AxInt",[],[],[], self.axioms[axnum])
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
@@ -144,6 +154,9 @@ class ProofEnvironment:
  
 
  def EquivExp(self,up):
+        if up > len(self.proof)-1:
+          print("Range exceeded.")
+          return
         proofelement = ProofElement("EquivExp",[up],[],[], astop.ExpandEquiv(self.proof[up].formula))
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
@@ -153,6 +166,9 @@ class ProofEnvironment:
   
 
  def EquivConst(self,up):
+      if up > len(self.proof)-1:
+        print("Range exceeded.")
+        return
       if astop.CreateEquiv(self.proof[up].formula)!=None:
         proofelement = ProofElement("EquivConst",[up],[],[], astop.CreateEquiv(self.proof[up].formula))
         proofelement.pos = len(self.proof) + 1
@@ -160,10 +176,15 @@ class ProofEnvironment:
         self.log.append("EquivConst(" + str(up) +")")
         
         return True 
-  
+      else:
+       print("Not an equivalence.")
+       return
   
 
  def DefEqInt(self,axnum):
+         if axnum > len(self.definitionequations)-1:
+           print("Range exceeded.")
+           return
          proofelement = ProofElement("DefEqInt",[],[],[], self.definitionequations [axnum])
          proofelement.pos = len(self.proof) + 1
          self.proof.append(proofelement)
@@ -172,6 +193,9 @@ class ProofEnvironment:
          return True             
 
  def AddTheorem(self,formstring):
+         if parser.Formula(tokenizer.Tokenize(formstring))== None:
+          print("Syntax Error.")
+          return
          form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring))) 
          self.theorems.append(form)
          
@@ -179,6 +203,9 @@ class ProofEnvironment:
 
 
  def TheoremInt(self,axnum):
+         if axnum > len(self.theorems)-1:
+           print("Range exceeded.")
+           return
          proofelement = ProofElement("TheoremInt",[],[],[], self.theorems[axnum])
          proofelement.pos = len(self.proof) + 1
          self.proof.append(proofelement)
@@ -187,12 +214,22 @@ class ProofEnvironment:
          return True       
                 
  def Qed(self,up):
+      if up > len(self.proof)-1:
+        print("Range exceeded.")
+        return
       if len(self.GetHypDep(self.proof[up]))==0:
        self.proof[up].qed = True
        return True
       return False
 
  def AndInt(self,left,right):
+     
+  if left > len(self.proof)-1:
+    print("Range exceeded.")
+    return  
+  if right > len(self.proof)-1:
+    print("Range exceeded.")
+    return       
   andop = parser.Leaf("&","Formula")
   andop.prefix = False
   andint = parser.Constructor(andop,"Formula", [self.proof[left].formula, self.proof[right].formula])       
@@ -207,9 +244,14 @@ class ProofEnvironment:
 
 
  def AndElimL(self,up):
+  if up > len(self.proof)-1:
+    print("Range exceeded.")
+    return     
   if self.proof[up].formula.name!="constructor":
+     print ("Not a conjunction.")
      return None
   if self.proof[up].formula.operator.name!="&":
+     print ("Not a conjunction.")
      return None
      
   proofelement = ProofElement("AndElimL",[up],[],[], self.proof[up].formula.left)  
@@ -220,9 +262,14 @@ class ProofEnvironment:
   return True
 
  def AndElimR (self,up):
+  if up > len(self.proof)-1:
+    print("Range exceeded.")
+    return     
   if self.proof[up].formula.name!="constructor":
+    print("Not a conjunction.")
     return None
   if self.proof[up].formula.operator.name!="&":
+    print("Not a conjunction.")
     return None    
   proofelement = ProofElement("AndElimR",[up],[],[], self.proof[up].formula.right)
   proofelement.pos = len(self.proof) + 1
@@ -233,6 +280,12 @@ class ProofEnvironment:
 
  def ImpElim (self, left,right):
  
+  if left > len(self.proof)-1:
+    print("Range exceeded.")
+    return 
+  if right > len(self.proof)-1:
+    print("Range exceeded.")
+    return    
   if self.proof[right].formula.operator.name =="->" and  astop.Equals(self.proof[right].formula.left ,self.proof[left].formula):
    proofelement = ProofElement("ImpElim",[left,right],[],[], self.proof[right].formula.right)
    proofelement.pos = len(self.proof) + 1
@@ -240,9 +293,18 @@ class ProofEnvironment:
    self.log.append("ImpElim(" +str(left) +","+str(right) + ")")
    
    return True
+  else:
+   print("Rule not applicable.") 
   
  def ImpInt(self,up,dis):
+  if up > len(self.proof)-1:
+    print("Range exceeded.")
+    return
+  if dis > len(self.proof)-1:
+    print("Range exceeded.")
+    return         
   if not self.proof[dis].name=="Hyp":
+   print("Cannot discharge a formula which is not an hypothesis.")
    return None
  # if not self.CheckDischargedBy(dis,up)==True:
   proofelement = ProofElement("ImpInt",[up],[],[], parser.Formula(tokenizer.Tokenize("("+parser.Printout(self.proof[dis].formula)+ "->"+
@@ -255,6 +317,12 @@ class ProofEnvironment:
   return True
 
  def OrIntR(self, up,formstring):
+    if up > len(self.proof)-1:
+      print("Range exceeded.")
+      return
+    if parser.Formula(tokenizer.Tokenize(formstring))== None:
+     print("Syntax Error.")
+     return  
     aux = astop.NegationExpand(Formula("(" + parser.Printout(self.proof[up].formula)+ " v " + formstring +")"  ))
     proofelement = ProofElement("OrIntR",[up],[],[], aux)
     proofelement.pos = len(self.proof) + 1
@@ -265,6 +333,12 @@ class ProofEnvironment:
     
 
  def OrIntL(self, up,formstring):
+    if up > len(self.proof)-1:
+      print("Range exceeded.")
+      return
+    if parser.Formula(tokenizer.Tokenize(formstring))== None:
+     print("Syntax Error.")
+     return 
     aux = astop.NegationExpand(Formula("(" + formstring + " v " + parser.Printout(self.proof[up].formula)  +")"  ))
     proofelement = ProofElement("OrIntL",[up],[],[], aux)
     proofelement.pos = len(self.proof) + 1
@@ -275,9 +349,28 @@ class ProofEnvironment:
         
 
  def OrElim(self, up, left, c1, right, c2):
+     
+  if up > len(self.proof)-1:
+    print("Range exceeded.")
+    return     
+  if left > len(self.proof)-1:
+    print("Range exceeded.")
+    return
+  if c1 > len(self.proof)-1:
+    print("Range exceeded.")
+    return
+  if right > len(self.proof)-1:
+    print("Range exceeded.")
+    return
+  if c2 > len(self.proof)-1:
+    print("Range exceeded.")
+    return              
+     
   if left > c1 or right > c2:
+    print("Subconclusion occurs before subhypothesis.")  
     return 
   if not self.proof[left].name =="Hyp" or not self.proof[right].name =="Hyp":
+    print("Cannot discharge formula which is not an hypothesis.") 
     return         
   if astop.Equals(self.proof[c1].formula,self.proof[c2].formula):
     if self.proof[up].formula.operator.name=="v":
@@ -290,8 +383,19 @@ class ProofEnvironment:
       self.log.append("OrElim(" + str(up) + "," + str(left) + "," + str(c1) + "," + str(right) + "," + str(c2) + ")")
       
       return True
-      
+  else:
+    print("Rule not applicable")
+    
+        
  def ForallElim (self, up,termstring):
+   if parser.Term(tokenizer.Tokenize(termstring))== None:
+    print("Syntax Error.")
+    return     
+     
+   if up > len(self.proof)-1:
+     print("Range exceeded.")
+     return
+     
    if self.proof[up].formula.operator.name=="forall":
     form = copy.deepcopy(self.proof[up].formula)   
     term = astop.NegationExpand(parser.Term(tokenizer.Tokenize(termstring)))
@@ -303,6 +407,14 @@ class ProofEnvironment:
     return True
 
  def ExistsInst (self, up, newvar):
+     
+   if up > len(self.proof)-1:
+     print("Range exceeded.")
+     return
+   if parser.Term(tokenizer.Tokenize(newvar))== None:
+    print("Syntax Error.")
+    return             
+     
    if self.proof[up].formula.operator.name=="exists":
     form = copy.deepcopy(self.proof[up].formula)   
     term = parser.Term(tokenizer.Tokenize(newvar))
@@ -314,10 +426,13 @@ class ProofEnvironment:
     return True         
 
  def ForallInt (self, up, variablestring, quantvarstring):
+     if up > len(self.proof)-1:
+       print("Range exceeded.")
+       return
      if quantvarstring in parser.constants:
         print("Cannot quantify over constant.")
         return None
-     if not quantvarstring in parser.variables:
+     if not quantvarstring in parser.variables or not variablestring in parser.variables :
          print("Undefined symbol.")
          return None
      variable = parser.Term(tokenizer.Tokenize(variablestring))
@@ -346,29 +461,30 @@ class ProofEnvironment:
 
 
  def ExistsElim(self,exists, sub, concl, inststring):
+       
   if not self.proof[exists].formula.operator.name=="exists":
-        
+   print("Not an existential formula.")     
    return None
   inst = Term(inststring) 
   body = astop.Free(copy.deepcopy(self.proof[exists].formula.children[0]),[])
   var = astop.Free(copy.deepcopy(self.proof[exists].formula.operator.variable),[])
   if not astop.Equals(astop.Substitution(body,var,inst),self.proof[sub].formula):
-        
+   print("Rule not applicable")        
    return None
   dep = [x for x in self.GetHypDep(self.proof[concl]) if x!= sub]
   for h in dep:
    aux = astop.GetFreeVars(astop.Free(self.proof[h].formula,[]),"Term")
    n = inst.name
    if n in aux:
-      
+    print("Variable occurs free in forbidden hypothesis.")  
     return None
   aux2 = astop.GetFreeVars(astop.Free(self.proof[exists].formula,[]),"Term"),
   if inst.name in aux2:
-     
+     print("Variable free in existential hypothesis.")
      return None
   aux3 = astop.GetFreeVars(astop.Free(copy.deepcopy(self.proof[concl].formula),[]),"Term")
   if inst.name in aux3:
-     
+     print("Variable free in conclusion.")
      return None         
   proofelement = ProofElement("ExistsElim", [exists,sub,concl],[inst],[], self.proof[concl].formula)
   proofelement.pos = len(self.proof) +1
@@ -379,9 +495,19 @@ class ProofEnvironment:
   return True
 
  def ExistsInt(self,up,termstring,newvarname,places):
+    
+  if up > len(self.proof)-1:
+    print("Range exceeded.")
+    return     
+  if parser.Term(tokenizer.Tokenize(termstring))== None:
+   print("Syntax Error.")
+   return  
+      
   if newvarname in parser.constants:
+    print("Variable is a constant.")   
     return None    
   if not newvarname in parser.variables:
+    print("Syntax Error.")
     return None     
   newvar = Term(newvarname)     
   term = Term(termstring)     
@@ -398,6 +524,11 @@ class ProofEnvironment:
 
 
  def AbsI(self,up,formstring):
+     
+    if up > len(self.proof)-1:
+      print("Range exceeded.")
+      return 
+      
     if parser.Printout(self.proof[up].formula) =="_|_":
      proofelement = ProofElement("AbsI", [up],[formstring],[], astop.NegationExpand(Formula(formstring)))
      proofelement.pos = len(self.proof) +1
@@ -422,6 +553,10 @@ class ProofEnvironment:
                    
 
  def Symmetry(self, up):
+    
+  if up > len(self.proof)-1:
+    print("Range exceeded.")
+    return     
   if self.proof[up].formula.operator.name =="=": 
    aux = copy.deepcopy(self.proof[up].formula)
    left = aux.left
@@ -435,11 +570,13 @@ class ProofEnvironment:
    self.log.append("Symmetry(" + str(up) + ")")
    
    return True
-
+  else:
+   print("Not an equality.")
  
  def Identity (self, termstring):
       aux = parser.Formula(tokenizer.Tokenize("("+termstring +" = " + termstring + ")") )
       if aux==None:
+        print("Syntax Error.")  
         return None
       proofelement= ProofElement("Identity", [],[termstring], [],aux)
       proofelement.pos = len(self.proof) + 1
@@ -449,6 +586,12 @@ class ProofEnvironment:
       return True
 
  def EqualitySub(self, up, eq , places):
+     if up > len(self.proof)-1:
+       print("Range exceeded.")
+       return
+     if eq > len(self.proof)-1:
+       print("Range exceeded.")
+       return  
      form = astop.Free(copy.deepcopy(self.proof[up].formula),[])
      equa = astop.Free(copy.deepcopy(self.proof[eq].formula),[])
      aux1= equa.left
@@ -507,10 +650,16 @@ class ProofEnvironment:
     print(parser.PrettyPrintout(ast))  
     
  def DefSub(self,up,conceptname,strargs,positions):
+   if up > len(self.proof)-1:
+     print("Range exceeded.")
+     return     
    strargs2 = copy.deepcopy(strargs) 
-   
+   if not conceptname in self.definitions.keys():
+    print("Predicate undefined.")
+    return
    params = copy.deepcopy(self.definitions[conceptname]["arguments"])
    formul = copy.deepcopy(self.definitions[conceptname]["formula"])
+   
    newparams = []
    for x in params:
      fresh = tokenizer.Fresh(parser.variables, tokenizer.alphabet)
@@ -534,6 +683,12 @@ class ProofEnvironment:
    return True
    
  def DefExp(self,up,conceptname,positions):
+   if up > len(self.proof)-1:
+     print("Range exceeded.")
+     return
+   if not conceptname in self.definitions.keys():
+    print("Predicate undefined.")
+    return     
    ast = copy.deepcopy(self.proof[up].formula)
    ast = astop.PredicatePosition(ast,conceptname,0)[0]
    aux = astop.ConceptExp(ast,conceptname,positions,self.definitions)
@@ -545,6 +700,9 @@ class ProofEnvironment:
    return True
     
  def NewDef(self, predname,args,formstring):
+  if parser.Formula(tokenizer.Tokenize(formstring))== None:
+   print("Syntax Error.")
+   return    
   self.AddPredicate(predname,len(args),True) 
   self.AddVariables(args)    
   form = astop.NegationExpand(Formula(formstring))  
@@ -554,7 +712,7 @@ class ProofEnvironment:
   return True 
  
  def NewDefEq(self,equationstring):
- 
+  
        
   equationstring = "("+equationstring +")"     
   if type(Formula(equationstring)).__name__!="Constructor":
@@ -1128,6 +1286,7 @@ def PredSub(up,predicatename,arguments,formstring,positions):
         
         
 def CheckTheory(namelist):
+  start = time.time()
   global Proof    
   tot = 0
   for x in namelist:
@@ -1144,7 +1303,8 @@ def CheckTheory(namelist):
      
      tot = tot + len(Proof.proof)
   print("")
-  print("Succesfully checked " + str(len(namelist)) + " theorems with a total of " +str(tot) + " lines.")
+  finish = time.time()-start
+  print("Succesfully checked " + str(len(namelist)) + " theorems with a total of " +str(tot) + " lines in " + str(int(finish)) + " seconds.")
   Load("Default")
 
 
