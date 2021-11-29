@@ -507,10 +507,24 @@ class ProofEnvironment:
     print(parser.PrettyPrintout(ast))  
     
  def DefSub(self,up,conceptname,strargs,positions):
-   strargs2 = copy.deepcopy(strargs)     
+   strargs2 = copy.deepcopy(strargs) 
+   
+   params = copy.deepcopy(self.definitions[conceptname]["arguments"])
+   formul = copy.deepcopy(self.definitions[conceptname]["formula"])
+   newparams = []
+   for x in params:
+     fresh = tokenizer.Fresh(parser.variables, tokenizer.alphabet)
+     parser.variables.append(fresh)
+     newparams.append(fresh)
+     formul = copy.deepcopy(astop.Substitution( astop.Free(formul,[]) , Term(x), Term(fresh)))         
+       
+       
    args = [parser.Term(tokenizer.Tokenize(x)) for x in strargs2]     
    ast = copy.deepcopy(self.proof[up].formula)
-   defs = self.definitions
+   defs = copy.deepcopy(self.definitions)
+   defs[conceptname]["formula"] = formul
+   defs[conceptname]["arguments"] = newparams
+  
    aux = astop.ConceptSub(ast,conceptname,args,positions,defs)
    proofelement = ProofElement("DefSub" , [up],[conceptname,args,positions], [],aux)
    proofelement.pos = len(self.proof) + 1
@@ -1115,6 +1129,7 @@ def PredSub(up,predicatename,arguments,formstring,positions):
         
 def CheckTheory(namelist):
   global Proof    
+  tot = 0
   for x in namelist:
      print("")
      Load(x)
@@ -1127,6 +1142,10 @@ def CheckTheory(namelist):
      print("")
      UsedTheorems()
      
+     tot = tot + len(Proof.proof)
+  print("")
+  print("Succesfully checked " + str(len(namelist)) + " theorems with a total of " +str(tot) + " lines.")
+  Load("Default")
 
 
 def ParseLog():
@@ -1200,9 +1219,34 @@ def Test():
  "Th11","Th12", "Th14","Th16","Th17","Th19","Th20","Th21", 
  "Th24","Th26","Th27","Th28","Th29","Th30",
  "Th31","Th32","Th33", "Th34","Th35", "Th37","Th38",
- "Th39","Th41", "Th42","Th43","Th44" ,   "Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62",  "Th64", "Th67", "Th69", "Th70", "Th71" , "Th73" , "Th74"])
+ "Th39","Th41", "Th42","Th43","Th44" ,   "Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62",  "Th64", "Th67", "Th69", "Th70", "Th71" , "Th73" , "Th74","Th75", "Th77"])
  
+
+def Fresh(up):
+ global Proof
+ formula = astop.Free(Proof.proof[up].formula,[])
+ variables = list(set(astop.GetFreeVars(formula,"Term")))
+ newvariables= []
+ print(formula,variables)
+ for x in variables:
+            
+   fresh = tokenizer.Fresh(parser.variables, tokenizer.alphabet)
+   parser.variables.append(fresh)
+   newvariables.append(fresh)
+     
+ 
+ for n in range(0,len(variables)):
+            
    
+   Proof.FreeSub(up+ 2*n, variables[n],newvariables[n])
+   
+ ShowProof()  
+ return True  
+ 
+ 
+ 
+ 
+ 
                        
          
             

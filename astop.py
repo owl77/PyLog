@@ -164,7 +164,7 @@ def Equals(ast1,ast2):
   a2 = copy.deepcopy(ast2)    
   aux1 = Numeric(a1,0)
   aux2 = Numeric(a2,0)
-  return parser.Printout(aux1) == parser.Printout(aux2)
+  return parser.TruePrintout(aux1) == parser.TruePrintout(aux2)
 
 
 def FreeEquiv(ast1,ast2):
@@ -342,15 +342,27 @@ def PreConceptSub(ast, conceptname,args,definitions):
    
    return ast
    
-def PostConceptSub(ast,conceptname,args,positions,definitions):  
+def PostConceptSub(ast,conceptname,args,positions,definitions): 
+        
    if type(ast).__name__=="Leaf":
      return ast   
+     
    if ast.operator.pos in positions:  
-     aux2 = [parser.Printout(a) for a in args]    
+    
+     aux2 = [parser.TruePrintout(a) for a in args]    
      return parser.Formula(tokenizer.Tokenize(conceptname+"(" +','.join(aux2)+ ")" ))   
    else:
-     oldchildren = copy.deepcopy(ast.children)
-     ast.children=[PostConceptSub( x , conceptname , args, positions,definitions) for x in oldchildren]
+     
+     aux = []  
+     old = copy.deepcopy(ast)
+     for x in old.children:
+      
+       aux.append(PostConceptSub( x , conceptname , args, positions,definitions))
+     ast.children = aux  
+     if len(aux)==2:
+       ast.left = aux[0]
+       ast.right = aux[1]
+  #   ast.children=[PostConceptSub( x , conceptname , args, positions,definitions) for x in oldchildren]
      return ast
 
 def ConceptSub(ast,conceptname,args,positions,definitions):
