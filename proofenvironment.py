@@ -728,6 +728,9 @@ class ProofEnvironment:
  #Also DelDef, DelAx, DelTheorem, Del EqDef
 
  def PredSub(self,up,predicatename,arguments,formstring,positions):
+  if Formula(formstring)==None:
+   print("Syntax Error.")
+   return      
   if predicatename in self.definitions.keys():
     print("Predicate is defined.")
     return None
@@ -865,6 +868,12 @@ class ProofEnvironment:
    
    
  def PolySub(self,up,polyvarname,formstring):
+     if up > len(self.proof)-1:
+       print("Range exceeded.")
+       return
+     
+     
+     
      for h in self.GetHypDep(self.proof[up]):
       if polyvarname in astop.GetPolyVars(self.proof[h].formula):
        return None            
@@ -1384,10 +1393,10 @@ def Test():
 
 def Fresh(up):
  global Proof
- formula = astop.Free(Proof.proof[up].formula,[])
+ formula = astop.Free(copy.deepcopy(Proof.proof[up].formula)  ,[])
  variables = list(set(astop.GetFreeVars(formula,"Term")))
  newvariables= []
- print(formula,variables)
+ 
  for x in variables:
             
    fresh = tokenizer.Fresh(parser.variables, tokenizer.alphabet)
@@ -1395,17 +1404,30 @@ def Fresh(up):
    newvariables.append(fresh)
      
  
+ start = True
  for n in range(0,len(variables)):
-            
-   
-   Proof.FreeSub(up+ 2*n, variables[n],newvariables[n])
-   
+              
+   if start ==True:
+    if not Proof.FreeSub(up, variables[n],newvariables[n]):
+     continue
+    else:
+      start = False 
+      continue      
+   if start ==False:
+    Proof.FreeSub(len(Proof.proof)-1, variables[n],newvariables[n])  
+ 
  ShowProof()  
  return True  
  
- 
- 
- 
+
+def ViewInput(up):
+  global Proof    
+  if up > len(Proof.proof)-1:
+    print("Range exceeded.")
+    return 
+  print(parser.TruePrintout(Proof.proof[up].formula))
+  return True
+   
  
                        
          
