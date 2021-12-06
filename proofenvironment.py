@@ -310,6 +310,7 @@ class ProofEnvironment:
  
  
   op = parser.Leaf("->","Formula")
+  op.prefix = False
   left = self.proof[dis].formula
   right = self.proof[up].formula
   aux = parser.Constructor(op,"Formula", [left, right])
