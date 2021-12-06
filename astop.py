@@ -116,11 +116,11 @@ def CreateEquiv(ast):
       right1 = rightimp.children[0]
       right2 = rightimp.children[1]
       if Equals(left1,right2) and Equals(left2,right1):
-       #   op = parser.Leaf("equiv","Formula")
-        #  op.prefix = False
-         # return parser.Constructor(op,"Formula", [left1, left2]) 
+          op = parser.Leaf("equiv","Formula")
+          op.prefix = False
+          return parser.Constructor(op,"Formula", [left1, left2]) 
         
-        return parser.Formula(tokenizer.Tokenize("(" + parser.Printout(left1)  + " equiv " +  parser.Printout(right1) +")" ))  
+        #return parser.Formula(tokenizer.Tokenize("(" + parser.Printout(left1)  + " equiv " +  parser.Printout(right1) +")" ))  
       
        
                    
@@ -253,7 +253,7 @@ def GetPolyVars(ast):
 
 def GetFreeVars(ast,typ):
  if type(ast).__name__== "Leaf":
-  if ast.free==True and ast.type==typ:
+  if ast.free==True and ast.type==typ and not ast.name in parser.constants:
    return [ast.name]
   else:
    return []
@@ -328,6 +328,9 @@ def ConceptExp(ast,conceptname,positions,definitions):
    else:
     oldchildren = ast.children
     ast.children=[ConceptExp(x,conceptname,positions,definitions) for x in oldchildren]
+    if len(oldchildren) ==2:
+     ast.left = ast.children[0]
+     ast.right = ast.children[1]
     return ast
   else:
    return ast

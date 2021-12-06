@@ -307,8 +307,22 @@ class ProofEnvironment:
    print("Cannot discharge a formula which is not an hypothesis.")
    return None
  # if not self.CheckDischargedBy(dis,up)==True:
-  proofelement = ProofElement("ImpInt",[up],[],[], parser.Formula(tokenizer.Tokenize("("+parser.Printout(self.proof[dis].formula)+ "->"+
-  parser.Printout(self.proof[up].formula)+ ")" ))) 
+ 
+ 
+  op = parser.Leaf("->","Formula")
+  left = self.proof[dis].formula
+  right = self.proof[up].formula
+  aux = parser.Constructor(op,"Formula", [left, right])
+  
+ 
+  proofelement = ProofElement("ImpInt",[up],[],[], aux) 
+  
+  
+#  parser.Formula(tokenizer.Tokenize("("+parser.Printout(self.proof[dis].formula)+ "->"+
+ # parser.Printout(self.proof[up].formula)+ ")" ))
+  
+  
+   
   proofelement.pos = len(self.proof) + 1
   self.proof[dis].dischargedby.append(proofelement.pos) 
   self.proof.append(proofelement)
@@ -1406,7 +1420,7 @@ def Test():
  "Th11","Th12", "Th14","Th16","Th17","Th19","Th20","Th21", 
  "Th24","Th26","Th27","Th28","Th29","Th30",
  "Th31","Th32","Th33", "Th34","Th35", "Th37","Th38",
- "Th39","Th41", "Th42","Th43","Th44" ,   "Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62",  "Th64", "Th67", "Th69", "Th70", "Th71" , "Th73" , "Th74","Th75", "Th77", "Th88", "Th90","Th91","Th92","FunctionApp","Th94"])
+ "Th39","Th41", "Th42","Th43","Th44" ,   "Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62",  "Th64", "Th67", "Th69", "Th70", "Th71" , "Th73" , "Th74","Th75", "Th77", "Th88", "Th90","Th91","Th92","FunctionApp","Th94","1-to-1"])
 
 # CheckTheoryLog(["Th4","Th5","Th6","Th7","Th8",
 # "Th11","Th12", "Th14","Th16","Th17","Th19","Th20","Th21", 
