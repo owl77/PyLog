@@ -338,8 +338,14 @@ class ProofEnvironment:
     if parser.Formula(tokenizer.Tokenize(formstring))== None:
      print("Syntax Error.")
      return  
-    aux = astop.NegationExpand(Formula("(" + parser.Printout(self.proof[up].formula)+ " v " + formstring +")"  ))
-    proofelement = ProofElement("OrIntR",[up],[],[], aux)
+     
+    formu = Formula("(A v B)")
+    newf = Formula(formstring)
+    formu.children = [self.proof[up].formula,newf]
+    formu.right =  newf
+    formu.left = self.proof[up].formula 
+   # aux = astop.NegationExpand(Formula("(" + parser.Printout(self.proof[up].formula)+ " v " + formstring +")"  ))
+    proofelement = ProofElement("OrIntR",[up],[],[], astop.NegationExpand(formu))
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
     self.log.append("OrIntR(" + str(up) + "," + '"' + formstring + '"' + ")")
@@ -354,8 +360,14 @@ class ProofEnvironment:
     if parser.Formula(tokenizer.Tokenize(formstring))== None:
      print("Syntax Error.")
      return 
-    aux = astop.NegationExpand(Formula("(" + formstring + " v " + parser.Printout(self.proof[up].formula)  +")"  ))
-    proofelement = ProofElement("OrIntL",[up],[],[], aux)
+     
+    formu = Formula("(A v B)")
+    newf = Formula(formstring)
+    formu.children = [newf, self.proof[up].formula]
+    formu.left =  newf
+    formu.right = self.proof[up].formula
+   # aux = astop.NegationExpand(Formula("(" + formstring + " v " + parser.Printout(self.proof[up].formula)  +")"  ))
+    proofelement = ProofElement("OrIntL",[up],[],[], astop.NegationExpand(formu))
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
     self.log.append("OrIntL(" + str(up) + "," + '"'+ formstring + '"' + ")")
@@ -463,9 +475,13 @@ class ProofEnvironment:
        return None
      form = copy.deepcopy(self.proof[up].formula) 
      aux1 = astop.Substitution(form, variable, quantvar)
-     parser.Printout(aux1)
-     aux2 = parser.Formula(tokenizer.Tokenize("forall "+quantvar.name +"."+ parser.Printout(aux1) ))
-     proofelement = ProofElement("ForallInt", [up],[variable,quantvar],[], aux2) 
+     #parser.Printout(aux1)
+     formu = Formula("forall x. (x = x)")
+     formu.operator.variable = quantvar
+     formu.children = [aux1]
+     
+#     aux2 = parser.Formula(tokenizer.Tokenize("forall "+quantvar.name +"."+ parser.Printout(aux1) ))
+     proofelement = ProofElement("ForallInt", [up],[variable,quantvar],[], formu) 
      proofelement.pos = len(self.proof) + 1
      self.proof.append(proofelement)
      self.log.append("ForallInt(" + str(up) + "," + '"' + variablestring +'"' +"," + '"' + quantvarstring +'"' + ")")
@@ -487,6 +503,7 @@ class ProofEnvironment:
    print("Rule not applicable")        
    return None
   dep = [x for x in self.GetHypDep(self.proof[concl]) if x!= sub]
+ 
   for h in dep:
    aux = astop.GetFreeVars(astop.Free(self.proof[h].formula,[]),"Term")
    n = inst.name
@@ -528,9 +545,14 @@ class ProofEnvironment:
   term = Term(termstring)     
   aux = copy.deepcopy(self.proof[up].formula)
   form = astop.SubstitutionByPosition(aux, term, newvar, places)
-  aux2 = parser.Printout(form)
-  out = parser.Formula(tokenizer.Tokenize("exists " + newvar.name +"." + aux2))
-  proofelement = ProofElement("ExistsInt", [up],[termstring,newvarname,places],[], out)
+  
+  formu = Formula("exists x. (x = x)")
+  formu.operator.variable = newvar
+  formu.children = [form]
+  
+#  aux2 = parser.Printout(form)
+#  out = parser.Formula(tokenizer.Tokenize("exists " + newvar.name +"." + aux2))
+  proofelement = ProofElement("ExistsInt", [up],[termstring,newvarname,places],[], formu)
   proofelement.pos = len(self.proof) +1
   self.proof.append(proofelement)
   self.log.append("ExistsInt(" + str(up) + "," + '"' + termstring + '"'+ "," + '"' + newvarname + '"' + "," + PrintNumList(places) +")")
@@ -840,9 +862,18 @@ class ProofEnvironment:
         if self.proof[up].formula.right.name == "constructor":
          if self.proof[up].formula.right.operator.name =="extension":
             body = astop.Free(copy.deepcopy(self.proof[up].formula.right.children[0]),[])
-            boundvar = astop.Free(copy.deepcopy(self.proof[up].formula.right.operator.variable),[])           
-            aux = Formula("( Set(" + parser.Printout(myvar) +") & "+ parser.Printout(astop.Substitution(body,boundvar,myvar)) + ")" )     
-            proofelement = ProofElement("ClassElim" , [up],[], [],aux)
+            boundvar = astop.Free(copy.deepcopy(self.proof[up].formula.right.operator.variable),[])  
+            
+            newbod = astop.Substitution(body,boundvar,myvar)
+            setfor = Formula(" Set(" + parser.Printout(myvar) +")" )
+            formu = Formula("(A & A)")
+            formu.children = [setfor,newbod]
+            formu.left = setfor
+            formu.right = newbod 
+            
+                     
+        #    aux = Formula("( Set(" + parser.Printout(myvar) +") & "+ parser.Printout(astop.Substitution(body,boundvar,myvar)) + ")" )     
+            proofelement = ProofElement("ClassElim" , [up],[], [],formu)
             proofelement.pos = len(self.proof) + 1
             self.proof.append(proofelement)
             self.log.append("ClassElim(" + str(up) + ")")
@@ -859,8 +890,17 @@ class ProofEnvironment:
            if form.left.children[0].name!="constructor":
              var = form.left.children[0]
              body = form.right
-             aux = Formula("Elem(" +var.name + ", extension " + newvarname  + " . "  + parser.Printout( astop.Substitution(body,var,newvar ) ) +")" )
-             proofelement = ProofElement("ClassInt" , [up],[newvarname], [],aux)
+             newbod = astop.Substitution(body,var,newvar )
+             exten = Term("extension x. (x = x)")
+             exten.operator.variable = Term(newvarname) 
+             exten.children = [newbod]
+             formu = Formula("Elem(x,x)")
+             formu.children = [var, exten]
+             formu.left = var
+             formu.right = exten
+             
+             #aux = Formula("Elem(" +var.name + ", extension " + newvarname  + " . "  + parser.Printout( astop.Substitution(body,var,newvar ) ) +")" )
+             proofelement = ProofElement("ClassInt" , [up],[newvarname], [],formu)
              proofelement.pos = len(self.proof) + 1
              self.proof.append(proofelement)
              self.log.append("ClassInt(" + str(up) + "," + '"' +newvarname +'"' + ")")
@@ -872,8 +912,19 @@ class ProofEnvironment:
            if form.right.children[0].name!="constructor":
              var = form.right.children[0]
              body = form.left
-             aux = Formula("Elem(" +var.name + ", extension " + newvarname  + " . "  + parser.Printout( astop.Substitution(body,var,newvar ) ) +")" )
-             proofelement = ProofElement("ClassInt" , [up],[newvarname], [],aux)
+             
+             newbod = astop.Substitution(body,var,newvar )
+             exten = Term("extension x. (x = x)")
+             exten.operator.variable = Term(newvarname) 
+             exten.children = [newbod]
+             formu = Formula("Elem(x,x)")
+             formu.children = [var, exten]
+             formu.left = var
+             formu.right = exten
+             
+             
+             #aux = Formula("Elem(" +var.name + ", extension " + newvarname  + " . "  + parser.Printout( astop.Substitution(body,var,newvar ) ) +")" )
+             proofelement = ProofElement("ClassInt" , [up],[newvarname], [],formu)
              proofelement.pos = len(self.proof) + 1
              self.proof.append(proofelement)
              self.log.append("ClassInt(" + str(up) + "," + '"' + newvarname + '"' + ")")
@@ -1421,7 +1472,7 @@ def Test():
  "Th11","Th12", "Th14","Th16","Th17","Th19","Th20","Th21", 
  "Th24","Th26","Th27","Th28","Th29","Th30",
  "Th31","Th32","Th33", "Th34","Th35", "Th37","Th38",
- "Th39","Th41", "Th42","Th43","Th44" ,   "Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62",  "Th64", "Th67", "Th69", "Th70", "Th71" , "Th73" , "Th74","Th75", "Th77", "Th88", "Th90","Th91","Th92","FunctionApp","Th94","1-to-1","FunctionRange","Th96", "FunctionApp2","FunctionInvApp", "FunctionDomRange","FunctionPair","Th97"])
+ "Th39","Th41", "Th42","Th43","Th44" ,   "Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62",  "Th64", "Th67", "Th69", "Th70", "Th71" , "Th73" , "Th74","Th75", "Th77", "Th88", "Th90","Th91","Th92","FunctionApp","Th94","1-to-1","FunctionRange","Th96", "FunctionApp2","FunctionInvApp", "FunctionDomRange","FunctionPair","Th97","PairEquals","WellOrdersSubset"])
 
 # CheckTheoryLog(["Th4","Th5","Th6","Th7","Th8",
 # "Th11","Th12", "Th14","Th16","Th17","Th19","Th20","Th21", 
