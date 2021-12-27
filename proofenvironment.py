@@ -664,7 +664,7 @@ class ProofEnvironment:
  def ShowLog(self):
   n = 0        
   for l in self.log:
-    print(str(n) + ". " + l,end="    ")
+    print(str(n) + ". " + l)
     n = n + 1 
   print("")         
            
@@ -1026,10 +1026,14 @@ class ProofEnvironment:
    return True
  
  def UsedTheorems(self):
+    used = [] 
     for l in self.log:
      if l[0:10]=="TheoremInt":
       x = int(l[11:len(l)-1])
-      print(str(x) + ". " + parser.PrettyPrintout(self.theorems[x]))     
+      if not x in used:
+       used.append(x)
+      
+       print(str(x) + ". " + parser.PrettyPrintout(self.theorems[x]))     
     return True
   
   
@@ -1049,7 +1053,7 @@ def GenerateProof():
   if len(Proof.proof)>0: 
    last = len(Proof.proof)-1
    Proof.Qed(last) 
-  ShowProof() 
+   ShowProof() 
    
             
          
