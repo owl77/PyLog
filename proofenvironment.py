@@ -335,12 +335,13 @@ class ProofEnvironment:
     if up > len(self.proof)-1:
       print("Range exceeded.")
       return
-    if parser.Formula(tokenizer.Tokenize(formstring))== None:
+    newf = Formula(formstring)
+    if newf == None:
      print("Syntax Error.")
      return  
      
     formu = Formula("(A v B)")
-    newf = Formula(formstring)
+   
     formu.children = [self.proof[up].formula,newf]
     formu.right =  newf
     formu.left = self.proof[up].formula 
@@ -357,12 +358,13 @@ class ProofEnvironment:
     if up > len(self.proof)-1:
       print("Range exceeded.")
       return
-    if parser.Formula(tokenizer.Tokenize(formstring))== None:
+    newf = Formula(formstring)
+    if newf == None:
      print("Syntax Error.")
      return 
      
     formu = Formula("(A v B)")
-    newf = Formula(formstring)
+    
     formu.children = [newf, self.proof[up].formula]
     formu.left =  newf
     formu.right = self.proof[up].formula
@@ -415,7 +417,8 @@ class ProofEnvironment:
     
         
  def ForallElim (self, up,termstring):
-   if parser.Term(tokenizer.Tokenize(termstring))== None:
+   term1 = Term(termstring)     
+   if term1 == None:
     print("Syntax Error.")
     return     
      
@@ -425,7 +428,7 @@ class ProofEnvironment:
      
    if self.proof[up].formula.operator.name=="forall":
     form = copy.deepcopy(self.proof[up].formula)   
-    term = astop.NegationExpand(parser.Term(tokenizer.Tokenize(termstring)))
+    term = astop.NegationExpand(term1)
     proofelement = ProofElement("ForallElim", [up],[term],[], astop.Substitution( astop.Free(form.children[0],[]) , form.operator.variable, term) )
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
@@ -438,13 +441,14 @@ class ProofEnvironment:
    if up > len(self.proof)-1:
      print("Range exceeded.")
      return
-   if parser.Term(tokenizer.Tokenize(newvar))== None:
+   term = Term(newvar)
+   if term== None:
     print("Syntax Error.")
     return             
      
    if self.proof[up].formula.operator.name=="exists":
     form = copy.deepcopy(self.proof[up].formula)   
-    term = parser.Term(tokenizer.Tokenize(newvar))
+  
     proofelement = ProofElement("Hyp", [],[],[], astop.Substitution( astop.Free(form.children[0],[]) , form.operator.variable, term) )
     proofelement.pos = len(self.proof) + 1
     self.proof.append(proofelement)
@@ -531,9 +535,10 @@ class ProofEnvironment:
   if up > len(self.proof)-1:
     print("Range exceeded.")
     return     
-  if parser.Term(tokenizer.Tokenize(termstring))== None:
-   print("Syntax Error.")
-   return  
+  term = Term(termstring)     
+  if term == None:
+    print("Syntax Error.")
+    return  
       
   if newvarname in parser.constants:
     print("Variable is a constant.")   
@@ -542,7 +547,7 @@ class ProofEnvironment:
     print("Syntax Error.")
     return None     
   newvar = Term(newvarname)     
-  term = Term(termstring)     
+       
   aux = copy.deepcopy(self.proof[up].formula)
   form = astop.SubstitutionByPosition(aux, term, newvar, places)
   
@@ -775,7 +780,8 @@ class ProofEnvironment:
  #Also DelDef, DelAx, DelTheorem, Del EqDef
 
  def PredSub(self,up,predicatename,arguments,formstring,positions):
-  if Formula(formstring)==None:
+  form1 = Formula(formstring)
+  if form1==None:
    print("Syntax Error.")
    return      
   if predicatename in self.definitions.keys():
@@ -784,7 +790,7 @@ class ProofEnvironment:
   ast = copy.deepcopy(self.proof[up].formula)
   ast = astop.PredicatePosition(ast,predicatename,0)[0]
   auxdef={}    
-  auxdef[predicatename] ={ "arguments":arguments, "formula":astop.NegationExpand(Formula(formstring))}
+  auxdef[predicatename] ={ "arguments":arguments, "formula":astop.NegationExpand(form1)}
   aux = astop.ConceptExp(ast,predicatename,positions,auxdef)
   proofelement = ProofElement("PredSub" , [up],[predicatename,arguments,formstring,positions], [],aux)
   proofelement.pos = len(self.proof) + 1
@@ -1046,6 +1052,7 @@ def GenerateProof():
   aux = Proof.log
   Proof.log = []        
   for logelem in aux:
+     
          
   
      exec("Proof." + logelem)

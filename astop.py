@@ -159,13 +159,31 @@ def Numeric(ast,n):
    ast.children = aux
    return ast
 
+def FastEquals(ast1,ast2):
+    if type(ast1).__name__=="Leaf":
+      if type(ast2).__name__=="Leaf":
+        return ast1.name == ast2.name
+    else:
+     if type(ast2).__name__=="Constructor":      
+       if ast1.operator.name != ast2.operator.name:
+           return False
+       if len(ast1.children)!= len(ast2.children):
+           return False
+       for x in range(0,len(ast1.children)):
+          if not FastEquals(ast1.children[x], ast2.children[x]):
+              return False      
+       return True
+     return False
+         
+
 def Equals(ast1,ast2):
   a1 = copy.deepcopy(ast1)
   a2 = copy.deepcopy(ast2)    
   aux1 = Numeric(a1,0)
   aux2 = Numeric(a2,0)
-  return parser.TruePrintout(aux1) == parser.TruePrintout(aux2)
-
+  
+  #return parser.TruePrintout(aux1) == parser.TruePrintout(aux2)
+  return FastEquals(aux1,aux2)
 
 def FreeEquiv(ast1,ast2):
  if type(ast1).__name__=="Leaf":
