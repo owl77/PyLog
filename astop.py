@@ -326,6 +326,14 @@ def SubstitutionByPosition(ast,term1,term2,positions):
   return BasicSubstitutionByPosition(Position(ast,term1,0)[0],term1,term2,positions)
 
 
+def MultiFresh(n):
+ out = []   
+ for m in range(0,n):
+   newvar = tokenizer.Fresh(parser.variables,tokenizer.alphabet)         
+   parser.variables.append(newvar)
+   out.append(newvar)
+ return out
+  
 
 def MultiSub(form,oldnamelist,newtermlist):
  #must check for clashes    
@@ -342,7 +350,10 @@ def ConceptExp(ast,conceptname,positions,definitions):
     aux = ast.children
     aux2 = copy.deepcopy(definitions[conceptname]["formula"])
     aux3 = copy.deepcopy(definitions[conceptname]["arguments"])
-    return MultiSub(aux2, aux3, aux)
+    freshnames = MultiFresh(len(aux3))
+    freshvars = [parser.Term(tokenizer.Tokenize(x)) for x in freshnames]
+    aux4 = MultiSub(aux2,aux3, freshvars)
+    return MultiSub(aux4, freshnames, aux)
    else:
     oldchildren = ast.children
     ast.children=[ConceptExp(x,conceptname,positions,definitions) for x in oldchildren]
