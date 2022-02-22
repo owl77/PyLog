@@ -208,25 +208,14 @@ def TruePrintout(ast):
  
 def CheckNeg(ast):
  if ast.name=="constructor":
-  if ast.operator.name=="->" and Printout(ast.right)=="_|_":
+  if ast.operator.name=="->" and ast.right.name =="_|_":
      return True           
  return False  
 
-def CheckSquare(ast):
-   if ast.name=="constructor":
-    if ast.operator.name=="square":
-       return True           
-   return False  
     
 
  
-def CheckNegSquare(ast):
- if ast.name=="constructor":
-  if ast.operator.name=="->" and Printout(ast.right)=="_|_":
-    if ast.left.name =="constructor":
-      if ast.left.operator.name =="square":
-         return True 
- return False  
+ 
 
 
 pretty = {"Elem": " ε " , "square":"□", "diamond":"◇", "equiv":" <-> " ,"forall":"∀", "exists":"∃","unique":"∃¹", "lambda":"λ"}
@@ -243,9 +232,9 @@ def prePrettyPrintout(ast):
    return pretty[ast.name]
       
  aux = [prePrettyPrintout(x) for x in ast.children]
- if ast.operator.name == "app" and type(ast.children[1]).__name__!="Leaf":
-     if ast.children[1].operator.name == "orderedpair":
-      return "(" + prePrettyPrintout(ast.children[1].left) + " "+ prePrettyPrintout(ast.children[0])+ " " +   prePrettyPrintout(ast.children[1].right)  + ")"  
+ #if ast.operator.name == "app" and type(ast.children[1]).__name__!="Leaf":
+  #   if ast.children[1].operator.name == "orderedpair":
+   #   return "(" + prePrettyPrintout(ast.children[1].left) + " "+ prePrettyPrintout(ast.children[0])+ " " +   prePrettyPrintout(ast.children[1].right)  + ")"  
  if ast.operator.name=="extension":
    return "{" + ast.operator.variable.name + ": " + prePrettyPrintout(ast.children[0])  +  "}"
  if ast.operator.name=="singleton":
@@ -294,8 +283,7 @@ def PrettyPrintout(ast):
 binders = {"forall":{"sourcetypes":["Formula"], "targettype":"Formula"},"exists":{"sourcetypes":["Formula"], "targettype":"Formula"},
 "unique":{"sourcetypes":["Formula"], "targettype":"Formula"}}
 
-binderstoterm ={ "extension":{"sourcetypes":["Formula"], "targettype":"Term"},
-"lambda":{"sourcetypes":["Term"], "targettype":"Term"   }}
+binderstoterm ={ "extension":{"sourcetypes":["Formula"], "targettype":"Term"}}
 
 def BinderParser(binders,variableparser):
  def out(exp):     
@@ -359,7 +347,7 @@ constants = []
 variables = ["x","y","z","u","v","w" ,"x'","y'","z'","u'","v'","w'","f","g","h","r"]
 functions = {"singleton":{"sourcetypes":["Term"],"targettype":"Term", "prefix":False }, "pair":{"sourcetypes":["Term","Term"],"targettype":"Term", "prefix":False } }
  
-quine = {"quine":{"sourcetypes":["Formula"], "targettype":"Term"}}
+
 predicates = { "Elem":{"sourcetypes":["Term","Term"],"targettype":"Formula","prefix": False}, "Set":{"sourcetypes":["Term"],"targettype":"Formula","prefix":True} ,
 "=":{"sourcetypes":["Term","Term"],"targettype":"Formula","prefix":False} }
 operators = {"&":{"sourcetypes":["Formula","Formula"],"targettype":"Formula","prefix":False},
@@ -379,8 +367,7 @@ def ArityToTypes(n):
 
 def Term(exp):
  return Or([Simple(variables,"Term"), Binary(Term,Term,SimpleCons(functions)), Operator(SimpleCons(functions),Term,[","],True) ,
- Operator(SimpleCons(quine),Formula,[","],False),Operator(BinderParser(binderstoterm,Simple(variables,"Term")), Formula ,[","],False),
-Operator(BinderParser(binderstoterm,Simple(variables,"Term")), Term ,[","],False)])(exp)    
+ Operator(BinderParser(binderstoterm,Simple(variables,"Term")), Formula ,[","],False) ])(exp)    
 
 def Formula(exp):
  return Or([Abs(),Simple(predicatevariables,"Formula"), Operator(SimpleCons(predicates),Term, [","],True),Operator(SimpleCons(modal),Formula, [","],False), Binary(Formula,Formula, SimpleCons(operators)),Binary(Term,Term, SimpleCons(predicates)),
