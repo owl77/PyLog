@@ -10690,5 +10690,192 @@ Used Theorems
 16. (¬(A v B) <-> (¬A & ¬B)) & (¬(A & B) <-> (¬A v ¬B))
 17. ((y ⊂ x) & ((x ~ y) = 0)) -> (x = y)
 
-Succesfully checked 69 theorems with a total of 9949 lines in 88 seconds.
->>> 
+Th100aux. (Function(f) & (Function(g) & ((domain(f) = domain(g)) & (f ⊂ g)))) -> (f = g)
+
+0. Function(f) & (Function(g) & ((domain(f) = domain(g)) & (f ⊂ g)))  Hyp 
+1. x ε g  Hyp 
+2. Function(g) & ((domain(f) = domain(g)) & (f ⊂ g))  AndElimR 0
+3. Function(g)  AndElimL 2
+4. Relation(g) & ∀x.∀y.∀z.((((x,y) ε g) & ((x,z) ε g)) -> (y = z))  DefExp 3
+5. Relation(g)  AndElimL 4
+6. ∀z.((z ε g) -> ∃x.∃y.(z = (x,y)))  DefExp 5
+7. (x ε g) -> ∃x_3.∃y.(x = (x_3,y))  ForallElim 6
+8. ∃x_3.∃y.(x = (x_3,y))  ImpElim 1 7
+9. ∃y.(x = (n,y))  Hyp 
+10. x = (n,y)  Hyp 
+11. (n,y) ε g  EqualitySub 1 10
+12. ∃b.((n,b) ε g)  ExistsInt 11
+13. ∃c.((n,y) ε c)  ExistsInt 11
+14. Set((n,y))  DefSub 13
+15. ((Set(x) & Set(y)) <-> Set((x,y))) & (¬Set((x,y)) -> ((x,y) = U))  TheoremInt 
+16. (Set(x) & Set(y)) <-> Set((x,y))  AndElimL 15
+17. ((Set(x) & Set(y)) -> Set((x,y))) & (Set((x,y)) -> (Set(x) & Set(y)))  EquivExp 16
+18. Set((x,y)) -> (Set(x) & Set(y))  AndElimR 17
+19. ∀x.(Set((x,y)) -> (Set(x) & Set(y)))  ForallInt 18
+20. Set((n,y)) -> (Set(n) & Set(y))  ForallElim 19
+21. Set(n) & Set(y)  ImpElim 14 20
+22. Set(n)  AndElimL 21
+23. Set(n) & ∃b.((n,b) ε g)  AndInt 22 12
+24. n ε {m: ∃b.((m,b) ε g)}  ClassInt 23
+25. domain(f) = {x: ∃y.((x,y) ε f)}  DefEqInt 
+26. {x: ∃y.((x,y) ε f)} = domain(f)  Symmetry 25
+27. ∀f.({x: ∃y.((x,y) ε f)} = domain(f))  ForallInt 26
+28. {x: ∃y.((x,y) ε g)} = domain(g)  ForallElim 27
+29. n ε domain(g)  EqualitySub 24 28
+30. (domain(f) = domain(g)) & (f ⊂ g)  AndElimR 2
+31. domain(f) = domain(g)  AndElimL 30
+32. domain(g) = domain(f)  Symmetry 31
+33. n ε domain(f)  EqualitySub 29 32
+34. n ε {x: ∃y.((x,y) ε f)}  EqualitySub 33 25
+35. Set(n) & ∃y.((n,y) ε f)  ClassElim 34
+36. ∃y.((n,y) ε f)  AndElimR 35
+37. (n,z) ε f  Hyp 
+38. (domain(f) = domain(g)) & (f ⊂ g)  AndElimR 2
+39. f ⊂ g  AndElimR 38
+40. ∀z.((z ε f) -> (z ε g))  DefExp 39
+41. ((n,z) ε f) -> ((n,z) ε g)  ForallElim 40
+42. (n,z) ε g  ImpElim 37 41
+43. ∀x.∀y.∀z.((((x,y) ε g) & ((x,z) ε g)) -> (y = z))  AndElimR 4
+44. ∀y.∀z.((((n,y) ε g) & ((n,z) ε g)) -> (y = z))  ForallElim 43
+45. ∀z.((((n,y) ε g) & ((n,z) ε g)) -> (y = z))  ForallElim 44
+46. (((n,y) ε g) & ((n,z) ε g)) -> (y = z)  ForallElim 45
+47. ((n,y) ε g) & ((n,z) ε g)  AndInt 11 42
+48. y = z  ImpElim 47 46
+49. x = (n,z)  EqualitySub 10 48
+50. (n,z) = x  Symmetry 49
+51. x ε f  EqualitySub 37 50
+52. x ε f  ExistsElim 9 10 51
+53. x ε f  ExistsElim 9 10 52
+54. x ε f  ExistsElim 36 37 52
+55. x ε f  ExistsElim 9 10 54
+56. x ε f  ExistsElim 8 9 55
+57. (x ε g) -> (x ε f)  ImpInt 56
+58. ∀x.((x ε g) -> (x ε f))  ForallInt 57
+59. g ⊂ f  DefSub 58
+60. (f ⊂ g) & (g ⊂ f)  AndInt 39 59
+61. (x = y) <-> ((x ⊂ y) & (y ⊂ x))  TheoremInt 
+62. ((x = y) -> ((x ⊂ y) & (y ⊂ x))) & (((x ⊂ y) & (y ⊂ x)) -> (x = y))  EquivExp 61
+63. ((x ⊂ y) & (y ⊂ x)) -> (x = y)  AndElimR 62
+64. ∀x.(((x ⊂ y) & (y ⊂ x)) -> (x = y))  ForallInt 63
+65. ((f ⊂ y) & (y ⊂ f)) -> (f = y)  ForallElim 64
+66. ∀y.(((f ⊂ y) & (y ⊂ f)) -> (f = y))  ForallInt 65
+67. ((f ⊂ g) & (g ⊂ f)) -> (f = g)  ForallElim 66
+68. f = g  ImpElim 60 67
+69. (Function(f) & (Function(g) & ((domain(f) = domain(g)) & (f ⊂ g)))) -> (f = g)  ImpInt 68 Qed
+
+Used Theorems
+
+1. ((Set(x) & Set(y)) <-> Set((x,y))) & (¬Set((x,y)) -> ((x,y) = U))
+2. (x = y) <-> ((x ⊂ y) & (y ⊂ x))
+
+Th100. ((WellOrders(r,x) & (WellOrders(s,y) & (Set(x) & ¬Set(y)))) -> ∃f.((OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & (x = domain(f)))) & ((((OrderPreserving(g,r,s) & (Section(r,x,domain(g)) & Section(s,y,range(g)))) & (x = domain(g))) & ((OrderPreserving(h,r,s) & (Section(r,x,domain(h)) & Section(s,y,range(h)))) & (x = domain(h)))) -> (g = h))
+
+0. WellOrders(r,x) & (WellOrders(s,y) & (Set(x) & ¬Set(y)))  Hyp 
+1. WellOrders(r,x)  AndElimL 0
+2. WellOrders(s,y) & (Set(x) & ¬Set(y))  AndElimR 0
+3. WellOrders(s,y)  AndElimL 2
+4. WellOrders(r,x) & WellOrders(s,y)  AndInt 1 3
+5. (WellOrders(r,x) & WellOrders(s,y)) -> ∃f.((OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & ((x = domain(f)) v (y = range(f))))  TheoremInt 
+6. ∃f.((OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & ((x = domain(f)) v (y = range(f))))  ImpElim 4 5
+7. (OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & ((x = domain(f)) v (y = range(f)))  Hyp 
+8. OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))  AndElimL 7
+9. OrderPreserving(f,r,s)  AndElimL 8
+10. (Function(f) & (WellOrders(r,domain(f)) & WellOrders(s,range(f)))) & ∀u.∀v.((((u ε domain(f)) & (v ε domain(f))) & ((u,v) ε r)) -> (((f'u),(f'v)) ε s))  DefExp 9
+11. Function(f) & (WellOrders(r,domain(f)) & WellOrders(s,range(f)))  AndElimL 10
+12. Function(f)  AndElimL 11
+13. (Function(f) & Set(domain(f))) -> Set(range(f))  AxInt 
+14. (x = domain(f)) v (y = range(f))  AndElimR 7
+15. OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))  AndElimL 7
+16. Section(r,x,domain(f)) & Section(s,y,range(f))  AndElimR 15
+17. Section(r,x,domain(f))  AndElimL 16
+18. ((domain(f) ⊂ x) & WellOrders(r,x)) & ∀u.∀v.((((u ε x) & (v ε domain(f))) & ((u,v) ε r)) -> (u ε domain(f)))  DefExp 17
+19. (domain(f) ⊂ x) & WellOrders(r,x)  AndElimL 18
+20. domain(f) ⊂ x  AndElimL 19
+21. (Set(x) & (y ⊂ x)) -> Set(y)  TheoremInt 
+22. WellOrders(s,y) & (Set(x) & ¬Set(y))  AndElimR 0
+23. Set(x) & ¬Set(y)  AndElimR 22
+24. Set(x)  AndElimL 23
+25. ∀y.((Set(x) & (y ⊂ x)) -> Set(y))  ForallInt 21
+26. (Set(x) & (domain(f) ⊂ x)) -> Set(domain(f))  ForallElim 25
+27. (Function(f) & Set(domain(f))) -> Set(range(f))  AxInt 
+28. Set(x) & (domain(f) ⊂ x)  AndInt 24 20
+29. Set(domain(f))  ImpElim 28 26
+30. Function(f) & Set(domain(f))  AndInt 12 29
+31. Set(range(f))  ImpElim 30 27
+32. x = domain(f)  Hyp 
+33. y = range(f)  Hyp 
+34. range(f) = y  Symmetry 33
+35. Set(y)  EqualitySub 31 34
+36. ¬Set(y)  AndElimR 23
+37. _|_  ImpElim 35 36
+38. x = domain(f)  AbsI 37
+39. x = domain(f)  OrElim 14 32 32 33 38
+40. (OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & (x = domain(f))  AndInt 8 39
+41. ∃f.((OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & (x = domain(f)))  ExistsInt 40
+42. ∃f.((OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & (x = domain(f)))  ExistsElim 6 7 41
+43. ((OrderPreserving(g,r,s) & (Section(r,x,domain(g)) & Section(s,y,range(g)))) & (x = domain(g))) & ((OrderPreserving(h,r,s) & (Section(r,x,domain(h)) & Section(s,y,range(h)))) & (x = domain(h)))  Hyp 
+44. (OrderPreserving(g,r,s) & (Section(r,x,domain(g)) & Section(s,y,range(g)))) & (x = domain(g))  AndElimL 43
+45. (OrderPreserving(h,r,s) & (Section(r,x,domain(h)) & Section(s,y,range(h)))) & (x = domain(h))  AndElimR 43
+46. OrderPreserving(g,r,s) & (Section(r,x,domain(g)) & Section(s,y,range(g)))  AndElimL 44
+47. OrderPreserving(g,r,s)  AndElimL 46
+48. Section(r,x,domain(g)) & Section(s,y,range(g))  AndElimR 46
+49. Section(s,y,range(g))  AndElimR 48
+50. Section(r,x,domain(g))  AndElimL 48
+51. OrderPreserving(h,r,s) & (Section(r,x,domain(h)) & Section(s,y,range(h)))  AndElimL 45
+52. OrderPreserving(h,r,s)  AndElimL 51
+53. Section(r,x,domain(h)) & Section(s,y,range(h))  AndElimR 51
+54. Section(r,x,domain(h))  AndElimL 53
+55. Section(s,y,range(h))  AndElimR 53
+56. Section(s,y,range(g)) & Section(s,y,range(h))  AndInt 49 55
+57. Section(r,x,domain(h)) & (Section(s,y,range(g)) & Section(s,y,range(h)))  AndInt 54 56
+58. Section(r,x,domain(g)) & (Section(r,x,domain(h)) & (Section(s,y,range(g)) & Section(s,y,range(h))))  AndInt 50 57
+59. OrderPreserving(h,r,s) & (Section(r,x,domain(g)) & (Section(r,x,domain(h)) & (Section(s,y,range(g)) & Section(s,y,range(h)))))  AndInt 52 58
+60. OrderPreserving(g,r,s) & (OrderPreserving(h,r,s) & (Section(r,x,domain(g)) & (Section(r,x,domain(h)) & (Section(s,y,range(g)) & Section(s,y,range(h))))))  AndInt 47 59
+61. (OrderPreserving(f,r,s) & (OrderPreserving(g,r,s) & (Section(r,x,domain(f)) & (Section(r,x,domain(g)) & (Section(s,y,range(f)) & Section(s,y,range(g))))))) -> ((f ⊂ g) v (g ⊂ f))  TheoremInt 
+62. ∀g.((OrderPreserving(f,r,s) & (OrderPreserving(g,r,s) & (Section(r,x,domain(f)) & (Section(r,x,domain(g)) & (Section(s,y,range(f)) & Section(s,y,range(g))))))) -> ((f ⊂ g) v (g ⊂ f)))  ForallInt 61
+63. (OrderPreserving(f,r,s) & (OrderPreserving(h,r,s) & (Section(r,x,domain(f)) & (Section(r,x,domain(h)) & (Section(s,y,range(f)) & Section(s,y,range(h))))))) -> ((f ⊂ h) v (h ⊂ f))  ForallElim 62
+64. ∀f.((OrderPreserving(f,r,s) & (OrderPreserving(h,r,s) & (Section(r,x,domain(f)) & (Section(r,x,domain(h)) & (Section(s,y,range(f)) & Section(s,y,range(h))))))) -> ((f ⊂ h) v (h ⊂ f)))  ForallInt 63
+65. (OrderPreserving(g,r,s) & (OrderPreserving(h,r,s) & (Section(r,x,domain(g)) & (Section(r,x,domain(h)) & (Section(s,y,range(g)) & Section(s,y,range(h))))))) -> ((g ⊂ h) v (h ⊂ g))  ForallElim 64
+66. (g ⊂ h) v (h ⊂ g)  ImpElim 60 65
+67. x = domain(g)  AndElimR 44
+68. x = domain(h)  AndElimR 45
+69. domain(g) = x  Symmetry 67
+70. domain(g) = domain(h)  EqualitySub 69 68
+71. (Function(g) & (WellOrders(r,domain(g)) & WellOrders(s,range(g)))) & ∀u.∀v.((((u ε domain(g)) & (v ε domain(g))) & ((u,v) ε r)) -> (((g'u),(g'v)) ε s))  DefExp 47
+72. (Function(h) & (WellOrders(r,domain(h)) & WellOrders(s,range(h)))) & ∀u.∀v.((((u ε domain(h)) & (v ε domain(h))) & ((u,v) ε r)) -> (((h'u),(h'v)) ε s))  DefExp 52
+73. Function(g) & (WellOrders(r,domain(g)) & WellOrders(s,range(g)))  AndElimL 71
+74. Function(g)  AndElimL 73
+75. Function(h) & (WellOrders(r,domain(h)) & WellOrders(s,range(h)))  AndElimL 72
+76. Function(h)  AndElimL 75
+77. (Function(f) & (Function(g) & ((domain(f) = domain(g)) & (f ⊂ g)))) -> (f = g)  TheoremInt 
+78. ∀g.((Function(f) & (Function(g) & ((domain(f) = domain(g)) & (f ⊂ g)))) -> (f = g))  ForallInt 77
+79. (Function(f) & (Function(h) & ((domain(f) = domain(h)) & (f ⊂ h)))) -> (f = h)  ForallElim 78
+80. ∀f.((Function(f) & (Function(h) & ((domain(f) = domain(h)) & (f ⊂ h)))) -> (f = h))  ForallInt 79
+81. (Function(g) & (Function(h) & ((domain(g) = domain(h)) & (g ⊂ h)))) -> (g = h)  ForallElim 80
+82. g ⊂ h  Hyp 
+83. (domain(g) = domain(h)) & (g ⊂ h)  AndInt 70 82
+84. Function(h) & ((domain(g) = domain(h)) & (g ⊂ h))  AndInt 76 83
+85. Function(g) & (Function(h) & ((domain(g) = domain(h)) & (g ⊂ h)))  AndInt 74 84
+86. g = h  ImpElim 85 81
+87. h ⊂ g  Hyp 
+88. ∀f.((Function(f) & (Function(g) & ((domain(f) = domain(g)) & (f ⊂ g)))) -> (f = g))  ForallInt 77
+89. (Function(h) & (Function(g) & ((domain(h) = domain(g)) & (h ⊂ g)))) -> (h = g)  ForallElim 88
+90. domain(h) = domain(g)  Symmetry 70
+91. (domain(h) = domain(g)) & (h ⊂ g)  AndInt 90 87
+92. Function(g) & ((domain(h) = domain(g)) & (h ⊂ g))  AndInt 74 91
+93. Function(h) & (Function(g) & ((domain(h) = domain(g)) & (h ⊂ g)))  AndInt 76 92
+94. h = g  ImpElim 93 89
+95. g = h  Symmetry 94
+96. g = h  OrElim 66 82 86 87 95
+97. (((OrderPreserving(g,r,s) & (Section(r,x,domain(g)) & Section(s,y,range(g)))) & (x = domain(g))) & ((OrderPreserving(h,r,s) & (Section(r,x,domain(h)) & Section(s,y,range(h)))) & (x = domain(h)))) -> (g = h)  ImpInt 96
+98. (WellOrders(r,x) & (WellOrders(s,y) & (Set(x) & ¬Set(y)))) -> ∃f.((OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & (x = domain(f)))  ImpInt 42
+99. ((WellOrders(r,x) & (WellOrders(s,y) & (Set(x) & ¬Set(y)))) -> ∃f.((OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & (x = domain(f)))) & ((((OrderPreserving(g,r,s) & (Section(r,x,domain(g)) & Section(s,y,range(g)))) & (x = domain(g))) & ((OrderPreserving(h,r,s) & (Section(r,x,domain(h)) & Section(s,y,range(h)))) & (x = domain(h)))) -> (g = h))  AndInt 98 97 Qed
+
+Used Theorems
+
+1. (WellOrders(r,x) & WellOrders(s,y)) -> ∃f.((OrderPreserving(f,r,s) & (Section(r,x,domain(f)) & Section(s,y,range(f)))) & ((x = domain(f)) v (y = range(f))))
+3. (Set(x) & (y ⊂ x)) -> Set(y)
+2. (OrderPreserving(f,r,s) & (OrderPreserving(g,r,s) & (Section(r,x,domain(f)) & (Section(r,x,domain(g)) & (Section(s,y,range(f)) & Section(s,y,range(g))))))) -> ((f ⊂ g) v (g ⊂ f))
+4. (Function(f) & (Function(g) & ((domain(f) = domain(g)) & (f ⊂ g)))) -> (f = g)
+
+Succesfully checked 71 theorems with a total of 10119 lines in 55 seconds.
