@@ -1388,6 +1388,7 @@ def CheckTheory(namelist):
   for x in namelist:
      print("")
      Load(x)
+     old = parser.variables
      th = parser.PrettyPrintout(Proof.proof[len(Proof.proof)-1].formula)
      print(x + ". " + th)
      print("")
@@ -1492,7 +1493,7 @@ def Test():
  "Th11","Th12", "Th14","Th16","Th17","Th19","Th20","Th21", 
  "Th24","Th26","Th27","Th28","Th29","Th30",
  "Th31","Th32","Th33", "Th34","Th35", "Th37","Th38",
- "Th39","Th41", "Th42","Th43","Th44" ,   "Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62",  "Th64", "Th67", "Th69", "Th70", "Th71" , "Th73" ,"Th74","Th75", "Th77", "Th88", "Th90","Th91","Th92","FunctionApp","Th94","1-to-1","FunctionRange","Th96", "FunctionApp2","FunctionInvApp", "FunctionDomRange","FunctionPair","Th97","PairEquals","WellOrdersSubset","ContCompl","Th99"])
+ "Th39","Th41", "Th42","Th43","Th44" ,   "Th46","Th47","Th49","Th50","Th53","Th54","Th55", "Th58", "Th59", "Th61", "Th62",  "Th64", "Th67", "Th69", "Th70", "Th71" , "Th73" ,"Th74","Th75", "Th77", "Th88", "Th90","Th91","Th92","FunctionApp","Th94","1-to-1","FunctionRange","Th96", "FunctionApp2","FunctionInvApp", "FunctionDomRange","FunctionPair","Th97","PairEquals","WellOrdersSubset","ContCompl","Th99","Th100aux","Th100"])
 
 # CheckTheoryLog(["Th4","Th5","Th6","Th7","Th8",
 # "Th11","Th12", "Th14","Th16","Th17","Th19","Th20","Th21", 
