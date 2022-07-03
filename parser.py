@@ -152,7 +152,7 @@ def Or(parserlist):
 
 
 def Printout(ast):
- if type(ast).__name__=="Leaf":
+ if type(ast).__name__=="Leaf":              
   return ast.name
  if type(ast).__name__=="Constructor":
   aux = [Printout(x) for x in ast.children]
@@ -216,7 +216,7 @@ def CheckNeg(ast):
      return True           
  return False  
 
-pretty = {"Elem": " ε " , "square":"□", "diamond":"◇", "equiv":" <-> " ,"forall":"∀", "exists":"∃","unique":"∃¹", "lambda":"λ"}
+pretty = {"Elem": " ε " , "square":"□", "diamond":"◇", "equiv":" <-> " ,"forall":"∀", "exists":"∃","unique":"∃¹", "lambda":"λ", "_|_": "┴"}
 
 
 
