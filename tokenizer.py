@@ -8,7 +8,7 @@
 def SpaceParenthesis(form):
   if form == None or form =="":
    return ""
-  if form[0] in ["(",")",",","&",".",":","="]:
+  if form[0] in ["(",")",",","&",".",":","=", "+", "*"]:
    return " " + form[0] + " " +SpaceParenthesis(form[1:])
   else:
    return form[0] + SpaceParenthesis(form[1:])

@@ -9,7 +9,7 @@ class Leaf:
   self.free = True
   self.pos = -1
   self.variable = None
-  self.variables = None
+ 
   self.prefix =True
 class Constructor:
   def __init__(self,operator, type,children):     
@@ -32,7 +32,7 @@ def Star(parser,separator):
    return [parse]  
   if len(exp) < 3:
    return None
-  for i in range(0,len(exp)-1):  
+  for i in range(1,len(exp)-1):  
     par1 =  parser(exp[0:i])   
     if par1== None:
      continue
@@ -47,7 +47,11 @@ def Star(parser,separator):
 
 
 def Star2(parser,separator):
- def out(exp):     
+ def out(exp):   
+      
+  
+  
+
   if len(exp)<2:
     return None       
   if exp[0]!="(" or exp[len(exp)-1 ]!=")":
@@ -212,12 +216,6 @@ def CheckNeg(ast):
      return True           
  return False  
 
-    
-
- 
- 
-
-
 pretty = {"Elem": " ε " , "square":"□", "diamond":"◇", "equiv":" <-> " ,"forall":"∀", "exists":"∃","unique":"∃¹", "lambda":"λ"}
 
 
@@ -298,19 +296,7 @@ def BinderParser(binders,variableparser):
    return aux
  return out
 
-#write version for Bealer's intensional abstract operator
 
-
-def MultiBinderParser(binders,variableparser,separator):
- def out(exp):
-  if len(exp) < 3:
-   return None
-  if exp[0] in binders.keys() and Star(variableparser,[","])(exp[1:len(exp)-1])!=None and exp[len(exp)-1]==".":
-   aux = Leaf(exp[0], binders[exp[0]]["targettype"])
-   aux.variables = Star(variableparser,separator)(exp[1:len(exp)-1])
-   aux.signature = binders[exp[0]]["sourcetypes"]
-   return aux
- return out
 
 
 def Simple(list, type):
@@ -353,8 +339,7 @@ predicates = { "Elem":{"sourcetypes":["Term","Term"],"targettype":"Formula","pre
 operators = {"&":{"sourcetypes":["Formula","Formula"],"targettype":"Formula","prefix":False},
 "v":{"sourcetypes":["Formula","Formula"],"targettype":"Formula","prefix":False},"equiv":{"sourcetypes":["Formula","Formula"],"targettype":"Formula","prefix":False},
 "->":{"sourcetypes":["Formula","Formula"],"targettype":"Formula","prefix":False}}
-modal = {"neg": {"sourcetypes":["Formula"],"targettype":"Formula"}, 
-"square":{"sourcetypes":["Formula"], "targettype":"Formula"},"diamond":{"sourcetypes":["Formula"], "targettype":"Formula"} }
+modal = {"neg": {"sourcetypes":["Formula"],"targettype":"Formula"}}
 
 def ArityToTypes(n):
  if n == 0:
@@ -370,19 +355,11 @@ def Term(exp):
  Operator(BinderParser(binderstoterm,Simple(variables,"Term")), Formula ,[","],False) ])(exp)    
 
 def Formula(exp):
- return Or([Abs(),Simple(predicatevariables,"Formula"), Operator(SimpleCons(predicates),Term, [","],True),Operator(SimpleCons(modal),Formula, [","],False), Binary(Formula,Formula, SimpleCons(operators)),Binary(Term,Term, SimpleCons(predicates)),
+ return Or([Abs(),Simple(predicatevariables,"Formula"), Operator(SimpleCons(predicates),Term, [","],True),Operator(SimpleCons(modal),Formula, [","],False),
+  Binary(Formula,Formula, SimpleCons(operators)),Binary(Term,Term, SimpleCons(predicates)),
   Operator(BinderParser(binders,Simple(variables,"Term")), Formula ,[","],False), Star2(Formula,"&") ])(exp)
 
 
-def Term2(exp):
- return Or([Simple(variables,"Term"), 
- Operator(SimpleCons(quine),Formula,[","],False)])(exp)    
-
-def Formula2(exp):
- return Or([ Operator(SimpleCons(predicates),Term, [","],True),
-  Operator(BinderParser(binders,Simple(variables,"Term")), Formula ,[","],False)])(exp)
-
-# It is a slug for Term("extension z. Elem(extension x. Elem(x,extension y. Elem(y,y)),z)")
 
 def termtest(exp):
  return Term(tokenizer.Tokenize(exp))    

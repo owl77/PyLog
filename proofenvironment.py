@@ -118,10 +118,11 @@ class ProofEnvironment:
   
 
  def Hyp(self,formstring):
-        if parser.Formula(tokenizer.Tokenize(formstring))== None:
+        a = parser.Formula(tokenizer.Tokenize(formstring))
+        if a== None:
          print("Syntax Error.")
          return
-        form = astop.NegationExpand(parser.Formula(tokenizer.Tokenize(formstring)))
+        form = astop.NegationExpand(a)
         proofelement = ProofElement("Hyp",[],[],[], form)
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
@@ -169,8 +170,9 @@ class ProofEnvironment:
       if up > len(self.proof)-1:
         print("Range exceeded.")
         return
-      if astop.CreateEquiv(self.proof[up].formula)!=None:
-        proofelement = ProofElement("EquivConst",[up],[],[], astop.CreateEquiv(self.proof[up].formula))
+      a = astop.CreateEquiv(self.proof[up].formula)    
+      if a!=None:
+        proofelement = ProofElement("EquivConst",[up],[],[], a)
         proofelement.pos = len(self.proof) + 1
         self.proof.append(proofelement)
         self.log.append("EquivConst(" + str(up) +")")
@@ -501,8 +503,9 @@ class ProofEnvironment:
    print("Not an existential formula.")     
    return None
   inst = Term(inststring) 
-  body = astop.Free(copy.deepcopy(self.proof[exists].formula.children[0]),[])
-  var = astop.Free(copy.deepcopy(self.proof[exists].formula.operator.variable),[])
+  a = copy.deepcopy(self.proof[exists].formula)
+  body = astop.Free(a.children[0],[])
+  var = astop.Free(a.operator.variable,[])
   if not astop.Equals(astop.Substitution(body,var,inst),self.proof[sub].formula):
    print("Rule not applicable")        
    return None
@@ -947,6 +950,99 @@ class ProofEnvironment:
              return True            
         
  
+ #for Second-Order Arithmetic
+ 
+ def SetElim(self,up):
+  if self.proof[up].formula.name=="constructor":
+    if self.proof[up].formula.operator.name=="Elem":    
+      #if type(self.proof[up].formula.left).__name__=="Leaf":
+        myvar = astop.Free(copy.deepcopy(self.proof[up].formula.left) ,[]) 
+        if self.proof[up].formula.right.name == "constructor":
+         if self.proof[up].formula.right.operator.name =="extension":
+            body = astop.Free(copy.deepcopy(self.proof[up].formula.right.children[0]),[])
+            boundvar = astop.Free(copy.deepcopy(self.proof[up].formula.right.operator.variable),[])  
+            
+            newbod = astop.Substitution(body,boundvar,myvar)
+            setfor = Formula(" Nat(" + parser.Printout(myvar) +")" )
+            formu = Formula("(A & A)")
+            formu.children = [setfor,newbod]
+            formu.left = setfor
+            formu.right = newbod 
+            
+                     
+        #    aux = Formula("( Set(" + parser.Printout(myvar) +") & "+ parser.Printout(astop.Substitution(body,boundvar,myvar)) + ")" )     
+            proofelement = ProofElement("SetElim" , [up],[], [],formu)
+            proofelement.pos = len(self.proof) + 1
+            self.proof.append(proofelement)
+            self.log.append("SetElim(" + str(up) + ")")
+            
+            return True
+   
+ def SetInt(self,up,newvarname):
+  form = copy.deepcopy(self.proof[up].formula)  
+  newvar = astop.Free(Term(newvarname),[])   
+  if form.name =="constructor":
+      if form.operator.name=="&":
+        if form.left.name=="constructor": 
+         if form.left.operator.name=="Nat":
+           if form.left.children[0].name!="constructor":
+             var = form.left.children[0]
+             body = form.right
+             newbod = astop.Substitution(body,var,newvar )
+             exten = Term("extension x. (x = x)")
+             exten.operator.variable = Term(newvarname) 
+             exten.children = [newbod]
+             formu = Formula("Elem(x,x)")
+             formu.children = [var, exten]
+             formu.left = var
+             formu.right = exten
+             
+             #aux = Formula("Elem(" +var.name + ", extension " + newvarname  + " . "  + parser.Printout( astop.Substitution(body,var,newvar ) ) +")" )
+             proofelement = ProofElement("SetInt" , [up],[newvarname], [],formu)
+             proofelement.pos = len(self.proof) + 1
+             self.proof.append(proofelement)
+             self.log.append("SetInt(" + str(up) + "," + '"' +newvarname +'"' + ")")
+            
+             return True            
+   
+        if form.right.name=="constructor": 
+         if form.right.operator.name=="Nat":
+           if form.right.children[0].name!="constructor":
+             var = form.right.children[0]
+             body = form.left
+             
+             newbod = astop.Substitution(body,var,newvar )
+             exten = Term("extension x. (x = x)")
+             exten.operator.variable = Term(newvarname) 
+             exten.children = [newbod]
+             formu = Formula("Elem(x,x)")
+             formu.children = [var, exten]
+             formu.left = var
+             formu.right = exten
+             
+             
+             #aux = Formula("Elem(" +var.name + ", extension " + newvarname  + " . "  + parser.Printout( astop.Substitution(body,var,newvar ) ) +")" )
+             proofelement = ProofElement("SetInt" , [up],[newvarname], [],formu)
+             proofelement.pos = len(self.proof) + 1
+             self.proof.append(proofelement)
+             self.log.append("SetInt(" + str(up) + "," + '"' + newvarname + '"' + ")")
+             
+             return True            
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
    
    
  def PolySub(self,up,polyvarname,formstring):
