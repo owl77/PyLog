@@ -12,7 +12,7 @@ def Free(ast,varnames):
     ast.free = False
     return ast
  else:
-  if not ast.operator.name in ["forall","exists","unique","lambda","extension"]:
+  if not ast.operator.name in ["forall","exists","unique","extension"]:
    oldchildren = ast.children
    ast.children = [Free(x,varnames) for x in oldchildren]
    return ast
@@ -148,7 +148,7 @@ def Numeric(ast,n):
  if type(ast).__name__=="Leaf":
   return ast
  else:
-  if ast.operator.name in ["exists","forall","lambda","extension","unique"]:
+  if ast.operator.name in ["exists","forall","extension","unique"]:
    var = ast.operator.variable.name
    ast.operator.variable.name = str(n)
    aux = VarSubstitution(Free(ast.children[0],[]), var, str(n)) 
@@ -289,7 +289,7 @@ def GetBindVars(ast):
  if type(ast).__name__=="Leaf":
   return []
  else:
-  if ast.operator.name in ["exists","forall","unique","lambda","extension"]:
+  if ast.operator.name in ["exists","forall","unique","extension"]:
    aux3 = [ast.operator.variable.name]
   else:
    aux3=[]

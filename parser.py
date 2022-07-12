@@ -27,42 +27,78 @@ class Constructor:
 
 def Star(parser,separator):
  def out(exp):
+
+     
+     
+     
   parse = parser(exp)      
   if parse!=None:
    return [parse]  
   if len(exp) < 3:
    return None
-  for i in range(1,len(exp)-1):  
-    par1 =  parser(exp[0:i])   
-    if par1== None:
-     continue
+  if len( [x for x in separator if x in exp] ) == 0:
+      return None
+   
+  length = len(exp) 
+  for i in range(1,length-1):  
     if not exp[i] in separator:
-     continue
+     continue  
+    
+    
+
+    par1 =  parser(exp[0:i])   
+    
+    if par1== None:
+      continue
+    #if not exp[i] in separator:
+    # continue
     par2 =  Star(parser,separator)(exp[i+1:])
     if par2 == None:
-     continue
+      continue
     return [par1] + par2
+    
+        
+        
+        
+    
+    
  return out
 
+
+
+def ListAst(listt, op, typee):
+ if len(listt) < 2:
+     return None
+ if len(listt) == 2:
+    return Constructor(Leaf(op, typee), typee  ,listt)
+ else:
+   return Constructor(Leaf(op, typee), typee  ,[listt[0], ListAst( listt[1:], op, typee )] )
+   
 
 
 def Star2(parser,separator):
  def out(exp):   
       
-  
+  if not separator in exp:
+      return None
   
 
   if len(exp)<2:
     return None       
-  if exp[0]!="(" or exp[len(exp)-1 ]!=")":
-    return None
+  if exp[0]!="(":
+      return None
+  if exp[len(exp)-1 ]!=")":
+      return None
   trim = exp[1: len(exp)-1]
   aux = Star(parser,[separator])(trim)
   if aux == None:
       return None
-  aux2 = [TruePrintout(x) for x in aux]
-  aux3 = tokenizer.ParenthesisGen(aux2,separator)
-  aux4 = parser(tokenizer.Tokenize(aux3))          
+ # aux2 = [TruePrintout(x) for x in aux]
+ # aux3 = tokenizer.ParenthesisGen(aux2,separator)
+ # aux4 = parser(tokenizer.Tokenize(aux3))          
+  aux4 = ListAst(aux, separator, "Formula")
+  # change "Formula" if needed 
+ 
   return aux4
  return out
 
@@ -73,18 +109,19 @@ def Star2(parser,separator):
 
 def Binary(parser1,parser2, opparser):
  def out(exp):
-  if len(exp) < 5:
+  length = len(exp)     
+  if length < 5:
    return None
-  for i in range(2,len(exp)-2):
+  for i in range(2,length-2):
    opars = opparser([exp[i]])      
    if opars ==None:
      continue
-   if  exp[0]!="(" or exp[len(exp)-1]!=")":
+   if  exp[0]!="(" or exp[length-1]!=")":
      continue
    par1 =  parser1(exp[1:i])
    if par1== None:
      continue
-   par2 =  parser2(exp[i+1:len(exp)-1])
+   par2 =  parser2(exp[i+1:length-1])
    if par2 == None:
       continue
    aux = Constructor(opars,opars.type,[par1,par2])
@@ -350,15 +387,55 @@ def ArityToTypes(n):
 
 
 
+#def Term(exp):
+ #return Or([Simple(variables,"Term"), Binary(Term,Term,SimpleCons(functions)), Operator(SimpleCons(functions),Term,[","],True) ,
+ #Operator(BinderParser(binderstoterm,Simple(variables,"Term")), Formula ,[","],False) ])(exp)    
+
+#def Formula(exp):
+# return Or([Abs(),Simple(predicatevariables,"Formula"), Operator(SimpleCons(predicates),Term, [","],True),Operator(SimpleCons(modal),Formula, [","],False),
+#  Binary(Formula,Formula, SimpleCons(operators)), Binary(Term,Term, SimpleCons(predicates)),
+#  Operator(BinderParser(binders,Simple(variables,"Term")), Formula ,[","],False), Star2(Formula,"&") ])(exp)
+
 def Term(exp):
- return Or([Simple(variables,"Term"), Binary(Term,Term,SimpleCons(functions)), Operator(SimpleCons(functions),Term,[","],True) ,
- Operator(BinderParser(binderstoterm,Simple(variables,"Term")), Formula ,[","],False) ])(exp)    
+# if len(exp) == 0:
+ #    return None    
+ if len(exp) == 1 and exp[0] in variables:
+    return Simple(variables,"Term")(exp)
+ if exp[0] =="extension":
+     return  Operator(BinderParser(binderstoterm,Simple(variables,"Term")), Formula ,[","],False)(exp)
+ if exp[0] in functions.keys():
+     
+     return    Operator(SimpleCons(functions),Term,[","],True)(exp)
+ return   Binary(Term,Term,SimpleCons(functions))(exp)           
+
 
 def Formula(exp):
- return Or([Abs(),Simple(predicatevariables,"Formula"), Operator(SimpleCons(predicates),Term, [","],True),Operator(SimpleCons(modal),Formula, [","],False),
-  Binary(Formula,Formula, SimpleCons(operators)),Binary(Term,Term, SimpleCons(predicates)),
-  Operator(BinderParser(binders,Simple(variables,"Term")), Formula ,[","],False), Star2(Formula,"&") ])(exp)
-
+  if len(exp)== 1:
+       if exp[0] == "_|_":
+        return Leaf(exp[0], "Formula")
+       return Simple(predicatevariables,"Formula")(exp)
+       
+  if exp[0] in ["forall", "exists"]:
+      return Operator(BinderParser(binders,Simple(variables,"Term")), Formula ,[","],False)(exp)
+     
+  if exp[0] in predicates.keys():
+      return Operator(SimpleCons(predicates),Term, [","],True)(exp)
+   
+  if exp[0] =="neg":
+       return Operator(SimpleCons(modal),Formula, [","],False)(exp)
+      
+  test =   Binary(Formula,Formula, SimpleCons(operators))(exp)
+  if test!= None:
+          return test
+  test =    Binary(Term,Term, SimpleCons(predicates))(exp)
+  if test!=None:
+         return test       
+  test =    Star2(Formula,"&")(exp)
+  return test
+                                     
+               
+                      
+    
 
 
 def termtest(exp):

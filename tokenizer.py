@@ -57,13 +57,13 @@ def Fresh(state,alphabet):
   if not "x_"+str(n) in state:
    return "x_"+str(n)
   
-def ParenthesisGen(list,symb):
-  if len(list) < 2:
-    return None    
-  if len(list) == 2:
-    return "(" + list[0] + symb + list[1] + ")"
-  else:
-    return  "(" + list[0] + symb + ParenthesisGen(list[1: ],symb) + ")"        
+#def ParenthesisGen(list,symb):
+ # if len(list) < 2:
+  #  return None    
+ # if len(list) == 2:
+  #  return "(" + list[0] + symb + list[1] + ")"
+  #else:
+   # return  "(" + list[0] + symb + ParenthesisGen(list[1: ],symb) + ")"        
           
     
     
