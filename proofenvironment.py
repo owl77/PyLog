@@ -1085,6 +1085,7 @@ class ProofEnvironment:
  
  def ViewTheory(self,name):
    dire = os.listdir(name)
+   dire.sort()
    os.chdir(name)
    for t in dire:
     if t[0]!= '.':   
