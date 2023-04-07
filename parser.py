@@ -276,6 +276,30 @@ def prePrettyPrintout(ast):
     return "{" + prePrettyPrintout(ast.children[0])  +  "}"
  if ast.operator.name=="inv":
      return  "(" + prePrettyPrintout(ast.children[0]) + ")⁻¹"    
+     
+ if ast.operator.name =="domain":
+   return "dom("   + prePrettyPrintout(ast.children[0]) + ")"
+   
+ if ast.operator.name =="Function":
+   return "FUN("   + prePrettyPrintout(ast.children[0]) + ")"
+ if ast.operator.name =="range":
+   return "rg("   + prePrettyPrintout(ast.children[0]) + ")"
+   
+   
+ if ast.operator.name =="OrderPreserving":
+   return "OP("   + ','.join([prePrettyPrintout(x) for x in ast.children]) + ")"
+   
+ 
+ if ast.operator.name =="WellOrders":
+   return "WO("  + ','.join([prePrettyPrintout(x) for x in ast.children])  + ")"  
+ if ast.operator.name =="Section":
+   return "Sec("  + ','.join([prePrettyPrintout(x) for x in ast.children])   + ")"
+   
+   
+   
+   
+   
+      
  if ast.operator.name=="pair":
     return "{" + prePrettyPrintout(ast.children[0])  + "," + prePrettyPrintout(ast.children[1]) + "}"  
  if ast.operator.name=="orderedpair":
@@ -292,7 +316,7 @@ def prePrettyPrintout(ast):
    
  if ast.operator.name=="quine":
    return "[" + prePrettyPrintout(ast.children[0])  +  "]"   
- if ast.binary == True and ast.operator.prefix == False:
+ if ast.binary == True and ast.operator.prefix == False or ast.operator.name =="&":
   if ast.operator.name in pretty.keys():
    return "(" + prePrettyPrintout(ast.left) + pretty[ast.operator.name]+   prePrettyPrintout(ast.right)  + ")" 
   else:
@@ -308,12 +332,31 @@ def prePrettyPrintout(ast):
     else:
       return prePrettyPrintout(ast.operator) + " " +prePrettyPrintout(ast.operator.variable) + "." + aux[0]  
  
-def PrettyPrintout(ast):
+def PrettyPrintout(ast): 
   aux = prePrettyPrintout(ast)
-  if aux[0]=="(" and aux[len(aux)-1]==")":
-   return aux[1:len(aux)-1]    
-  else:
+  if len(aux) < 101:
+   if aux[0]=="(" and aux[len(aux)-1]==")":
+    return aux[1:len(aux)-1]    
+   else:
     return aux 
+  else:
+   a = aux[0:101]
+   b = aux[101:]
+   if len(b) < 101:
+    if a[0] =="(":
+     return a[1:] + "\n" + b[:len(b)-1]
+    else:
+     return a + b
+   else:
+    b = aux[101:202]
+    c = aux[203:]
+    if a[0] == "(":
+     return a[1:] + "\n" + b[:101] + "\n" + c[:len(c)-1]
+    else:
+     return a + "\n" + b[:101] + "\n" + c[:len(c)-1]
+     
+      
+    
      
 binders = {"forall":{"sourcetypes":["Formula"], "targettype":"Formula"},"exists":{"sourcetypes":["Formula"], "targettype":"Formula"},
 "unique":{"sourcetypes":["Formula"], "targettype":"Formula"}}

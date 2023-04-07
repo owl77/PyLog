@@ -6,6 +6,7 @@ import copy
 import os
 import inspect
 import time
+import sys
 
 def Intersect(list1,list2):
  return [x for x in list1 if x in list2]
@@ -666,8 +667,37 @@ class ProofEnvironment:
    if p.qed:      
     print(str(n)+". "+parser.PrettyPrintout(p.formula) +"  "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]) + " Qed" )
    else:
+    
     print(str(n)+". "+parser.PrettyPrintout(p.formula) +"  "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]))      
    n = n + 1
+   
+   
+ def ShowProof2(self):
+  n = 0     
+  for  p in self.proof:
+   if n == len(self.proof) -1:
+    if p.qed:      
+     print(str(n)+". "+parser.PrettyPrintout(p.formula) +"  "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]) + " Qed" )
+    else:
+     print(str(n)+". "+parser.PrettyPrintout(p.formula) +"  "+p.name +" "+ ' '.join([str(y) for y in p.dependencies])) 
+    return 
+   
+   
+   if p.qed:      
+    print(str(n)+". "+parser.PrettyPrintout(p.formula) +"  "+p.name +" "+ ' '.join([str(y) for y in p.dependencies]) + " Qed" )
+    
+   else:
+    if not (p.name=="OrElim" and self.proof[n-1].name =="OrElim") and not (p.name=="ExistsElim" and self.proof[n-1].name =="ExistsElim") and not (p.name =="ForallInt" and self.proof[n+1].name =="ForallElim") and not (p.name =="ForallElim" and self.proof[n+1].name =="ForallInt") and not (p.name =="ExistsInt" and self.proof[n+1].name =="ExistsInt") and not p.name in ["DefEqInt", "EquivExp", "EquivConst", "Identity", "Symmetry", "AndElimL", "AndElimR"]: 
+     print(str(n)+". "+parser.PrettyPrintout(p.formula) +"  "+p.name +" "+ ' '.join([str(y) for y in p.dependencies])) 
+     
+    #else:
+     #print(str(n)+"." +p.name +" "+ ' '.join([str(y) for y in p.dependencies])) 
+       
+   
+  
+   n = n + 1
+   
+   
    
  def ShowLog(self):
   n = 0        
@@ -1157,7 +1187,7 @@ def GenerateProof():
   if len(Proof.proof)>0: 
    last = len(Proof.proof)-1
    Proof.Qed(last) 
-   ShowProof() 
+   ShowProof2() 
    
             
          
@@ -1338,6 +1368,12 @@ def EqualitySub(up, eq , places):
         
 def ShowProof():
     return Proof.ShowProof()
+
+def ShowProof2():
+    return Proof.ShowProof2()
+        
+    
+    
 def ShowLast():
     return Proof.ShowLast()
 def ShowAxioms():
